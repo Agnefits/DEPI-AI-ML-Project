@@ -1,0 +1,78 @@
+@model IEnumerable<ClinicAI.Models.SmartModel>
+@{
+    ViewData["Title"] = "Smart AI Models";
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <div class="row mb-4 align-items-center">
+        <div class="col-sm-6">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;"><i class="fas fa-robot"></i> Smart AI Models</h1>
+            <p class="text-muted">Register, configure, and monitor cognitive medical models deployed on the cloud.</p>
+        </div>
+        <div class="col-sm-6 text-sm-end">
+            <a href="@Url.Action("Create")" class="btn-glass"><i class="fas fa-plus"></i> Register AI Model</a>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Model Name</th>
+                        <th>Version</th>
+                        <th>Description</th>
+                        <th>Accuracy Rate</th>
+                        <th>Status</th>
+                        <th>Registered At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var m in Model)
+                        {
+                            <tr>
+                                <td class="font-weight-bold" style="color: #a5b4fc;">@m.Name</td>
+                                <td><span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.2);">@m.Version</span></td>
+                                <td>@m.Description</td>
+                                <td class="font-weight-bold" style="color: #10b981;">@(m.Accuracy * 100)%</td>
+                                <td>
+                                    @if (m.IsActive)
+                                    {
+                                        <span class="status-badge status-active">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-inactive">Inactive</span>
+                                    }
+                                </td>
+                                <td>@m.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                         <a href="@Url.Action("Edit", new { id = m.Id })" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px;">
+                                             <i class="fas fa-pen"></i> Edit
+                                         </a>
+                                         <form asp-action="ToggleActive" asp-route-id="@m.Id" method="post" class="d-inline">
+                                             <button type="submit" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border-color: rgba(239, 68, 68, 0.2); color: #f87171;">
+                                                 <i class="fas fa-gear"></i> Toggle Status
+                                             </button>
+                                         </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">No AI models registered yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

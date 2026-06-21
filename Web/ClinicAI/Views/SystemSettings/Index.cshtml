@@ -1,0 +1,133 @@
+@model ClinicAI.ViewModels.SystemSettings.SystemSettingsVM
+@{
+    ViewData["Title"] = "System Settings Configuration";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container py-4 animate-fade-in" style="max-width: 900px;">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">System Settings</h1>
+            <p class="text-muted">Configure clinic storage capacities, email SMTP credentials, and AI endpoint connections.</p>
+        </div>
+    </div>
+
+    <!-- Success Message Alert -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success glass-card border-success mb-4" style="background: rgba(16, 185, 129, 0.1); color: #a7f3d0; font-size: 0.95rem; padding: 1rem;">
+            <strong><i class="fas fa-circle-check text-success"></i> Success:</strong> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- Form -->
+    <form asp-action="Save" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- 1. Storage Settings Card -->
+        <div class="glass-card mb-4">
+            <h4 class="mb-4 font-weight-bold" style="color: #38bdf8;"><i class="fas fa-folder-open text-info me-2"></i> File & Storage Configuration</h4>
+            <div class="row">
+                <!-- Max size -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="MaxUploadSizeMb" class="glass-label">Maximum Upload File Size (MB)</label>
+                    <input asp-for="MaxUploadSizeMb" type="number" class="glass-input" required />
+                    <span asp-validation-for="MaxUploadSizeMb" class="text-danger"></span>
+                </div>
+
+                <!-- Allowed Extensions -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="AllowedExtensions" class="glass-label">Allowed File Extensions</label>
+                    <input asp-for="AllowedExtensions" class="glass-input" required />
+                    <span asp-validation-for="AllowedExtensions" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mb-2">
+                <label asp-for="StoragePath" class="glass-label">Local uploads directory path</label>
+                <input asp-for="StoragePath" class="glass-input" required />
+                <span asp-validation-for="StoragePath" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- 2. AI Model settings Card -->
+        <div class="glass-card mb-4">
+            <h4 class="mb-4 font-weight-bold" style="color: #818cf8;"><i class="fas fa-brain text-primary me-2"></i> AI Model Engine Integration</h4>
+            <div class="row">
+                <!-- API URL -->
+                <div class="col-md-12 mb-3">
+                    <label asp-for="ApiUrl" class="glass-label">API Endpoint URL</label>
+                    <input asp-for="ApiUrl" type="url" class="glass-input" placeholder="https://api.model-provider.com/v1/..." required />
+                    <span asp-validation-for="ApiUrl" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row">
+                <!-- API Key -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ApiKey" class="glass-label">Bearer Token / API Security Key</label>
+                    <input asp-for="ApiKey" type="password" class="glass-input" placeholder="••••••••••••••••" value="@Model.ApiKey" />
+                    <span asp-validation-for="ApiKey" class="text-danger"></span>
+                </div>
+
+                <!-- Model Name -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ModelName" class="glass-label">Target Model Name (Identifier)</label>
+                    <input asp-for="ModelName" class="glass-input" required />
+                    <span asp-validation-for="ModelName" class="text-danger"></span>
+                </div>
+            </div>
+            <div>
+                <label asp-for="ConfidenceThreshold" class="glass-label">Confidence Acceptance Threshold (0.00 - 1.00)</label>
+                <input asp-for="ConfidenceThreshold" type="number" step="0.01" min="0.00" max="1.00" class="glass-input" required />
+                <span asp-validation-for="ConfidenceThreshold" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- 3. SMTP Email Configuration Card -->
+        <div class="glass-card mb-4">
+            <h4 class="mb-4 font-weight-bold" style="color: #fbbf24;"><i class="fas fa-envelope text-warning me-2"></i> SMTP Email Server Settings</h4>
+            <div class="row">
+                <!-- SMTP Host -->
+                <div class="col-md-8 mb-3">
+                    <label asp-for="SmtpHost" class="glass-label">SMTP Mail Host Address</label>
+                    <input asp-for="SmtpHost" class="glass-input" required />
+                    <span asp-validation-for="SmtpHost" class="text-danger"></span>
+                </div>
+
+                <!-- SMTP Port -->
+                <div class="col-md-4 mb-3">
+                    <label asp-for="SmtpPort" class="glass-label">SMTP Mail Port</label>
+                    <input asp-for="SmtpPort" type="number" class="glass-input" required />
+                    <span asp-validation-for="SmtpPort" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Sender Email -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SenderEmail" class="glass-label">Sender Email Address</label>
+                    <input asp-for="SenderEmail" type="email" class="glass-input" required />
+                    <span asp-validation-for="SenderEmail" class="text-danger"></span>
+                </div>
+
+                <!-- Sender Password -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SenderPassword" class="glass-label">Sender SMTP Password</label>
+                    <input asp-for="SenderPassword" type="password" class="glass-input" placeholder="••••••••••••••••" value="@Model.SenderPassword" />
+                    <span asp-validation-for="SenderPassword" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mb-2">
+                <div class="custom-control custom-switch">
+                    <input asp-for="EnableSsl" type="checkbox" class="custom-control-input" id="enableSslSwitch" />
+                    <label class="custom-control-label glass-label font-weight-normal" for="enableSslSwitch">Enable Secure Sockets Layer (SSL)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Actions -->
+        <div class="d-flex justify-content-end mb-5">
+            <button type="submit" class="btn-glass" style="padding: 0.85rem 2rem;"><i class="fas fa-floppy-disk"></i> Save System Settings</button>
+        </div>
+    </form>
+</div>

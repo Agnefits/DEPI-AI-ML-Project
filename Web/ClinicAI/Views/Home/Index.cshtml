@@ -1,0 +1,457 @@
+@{
+    ViewData["Title"] = "ClinicAI — AI-Powered Clinical Intelligence";
+    Layout = "_Layout";
+}
+
+<!-- ═══════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════ -->
+<section class="landing-hero">
+    <!-- Background decorations -->
+    <div class="hero-grid-overlay"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-glow hero-glow-3"></div>
+
+    <div class="container">
+        <div class="row align-items-center">
+
+            <!-- Left: Copy -->
+            <div class="col-lg-6 hero-content">
+                <span class="hero-eyebrow">
+                    <i class="fas fa-circle-dot fa-xs"></i>
+                    AI-Powered Healthcare Platform
+                </span>
+
+                <h1 class="hero-title">
+                    Intelligent Diagnostics<br>
+                    for <span class="gradient-text">Modern Medicine</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    ClinicAI empowers radiologists, doctors, and hospital administrators
+                    with cutting-edge AI analysis, real-time case management, and
+                    data-driven insights — all in one seamless platform.
+                </p>
+
+                <div class="hero-actions">
+                    <a asp-controller="Account" asp-action="Login" class="btn-hero-primary" id="heroGetStarted">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn-hero-secondary" id="heroViewDemo">
+                        <i class="fas fa-chart-bar"></i> View Dashboard
+                    </a>
+                </div>
+
+                <div class="hero-trust">
+                    <span class="trust-badge">
+                        <span class="icon"><i class="fas fa-lock"></i></span> HIPAA Compliant
+                    </span>
+                    <span class="trust-dot"></span>
+                    <span class="trust-badge">
+                        <span class="icon"><i class="fas fa-robot"></i></span> AI-Driven
+                    </span>
+                    <span class="trust-dot"></span>
+                    <span class="trust-badge">
+                        <span class="icon"><i class="fas fa-bolt"></i></span> Real-Time
+                    </span>
+                </div>
+            </div>
+
+            <!-- Right: Visual mock dashboard -->
+            <div class="col-lg-6 hero-visual">
+                <div style="position: relative;">
+
+                    <!-- Main card mock -->
+                    <div class="hero-card-mock">
+                        <div class="mock-header">
+                            <div class="mock-dots">
+                                <span class="mock-dot"></span>
+                                <span class="mock-dot"></span>
+                                <span class="mock-dot"></span>
+                            </div>
+                            <span class="mock-title">Analytics Overview</span>
+                            <span class="mock-ai-tag">
+                                <span class="ai-pulse"></span> AI Live
+                            </span>
+                        </div>
+
+                        <div class="mock-stat-row">
+                            <div class="mock-stat">
+                                <div class="mock-stat-num">2.4k</div>
+                                <div class="mock-stat-lbl">Patients</div>
+                            </div>
+                            <div class="mock-stat">
+                                <div class="mock-stat-num">98%</div>
+                                <div class="mock-stat-lbl">Accuracy</div>
+                            </div>
+                            <div class="mock-stat">
+                                <div class="mock-stat-num">142</div>
+                                <div class="mock-stat-lbl">Cases</div>
+                            </div>
+                        </div>
+
+                        <!-- Mini bar chart -->
+                        <div class="mock-chart-bar">
+                            <div class="mock-bar" style="height: 40%;"></div>
+                            <div class="mock-bar" style="height: 65%;"></div>
+                            <div class="mock-bar" style="height: 50%;"></div>
+                            <div class="mock-bar" style="height: 80%;"></div>
+                            <div class="mock-bar" style="height: 60%;"></div>
+                            <div class="mock-bar" style="height: 90%;"></div>
+                            <div class="mock-bar" style="height: 75%;"></div>
+                            <div class="mock-bar" style="height: 100%;"></div>
+                            <div class="mock-bar" style="height: 85%;"></div>
+                            <div class="mock-bar" style="height: 70%;"></div>
+                            <div class="mock-bar" style="height: 95%;"></div>
+                            <div class="mock-bar" style="height: 80%;"></div>
+                        </div>
+
+                        <!-- Mock table rows -->
+                        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                            @{
+                                var mockRows = new[]
+                                {
+                                    new { Name = "Ahmed Hassan",   Status = "Analyzed",   Icon = "fa-circle-check",  Color = "#6ee7b7" },
+                                    new { Name = "Sara Ahmed",     Status = "Processing", Icon = "fa-spinner",       Color = "#fde68a" },
+                                    new { Name = "Mohamed Ali",    Status = "Analyzed",   Icon = "fa-circle-check",  Color = "#6ee7b7" },
+                                };
+                            }
+                            @foreach (var row in mockRows)
+                            {
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.45rem 0.6rem;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.05);">
+                                    <span style="font-size:0.75rem;font-weight:500;">
+                                        <i class="fas fa-user-circle" style="color:rgba(255,255,255,0.3);margin-right:0.3rem;"></i>
+                                        @row.Name
+                                    </span>
+                                    <span style="font-size:0.7rem;color:@row.Color;font-weight:600;">
+                                        <i class="fas @row.Icon"></i> @row.Status
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Floating badge 1 -->
+                    <div class="float-badge float-badge-1">
+                        <span class="float-badge-icon"><i class="fas fa-brain" style="color:#a5b4fc;"></i></span>
+                        AI Confidence: <strong style="color:#a5b4fc;">97.3%</strong>
+                    </div>
+
+                    <!-- Floating badge 2 -->
+                    <div class="float-badge float-badge-2">
+                        <span class="float-badge-icon"><i class="fas fa-arrow-trend-up" style="color:#6ee7b7;"></i></span>
+                        Cases <strong style="color:#6ee7b7;">+24%</strong> this month
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     ANIMATED STATS SECTION
+═══════════════════════════════════════════════ -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-6 col-md-3 reveal">
+                <div class="stat-counter-card">
+                    <span class="stat-counter-icon"><i class="fas fa-hospital" style="background:linear-gradient(135deg,#818cf8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></i></span>
+                    <div class="stat-counter-num" data-count="120" data-suffix="+">0+</div>
+                    <div class="stat-counter-label">Hospitals</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 reveal reveal-delay-1">
+                <div class="stat-counter-card">
+                    <span class="stat-counter-icon"><i class="fas fa-hospital-user" style="background:linear-gradient(135deg,#818cf8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></i></span>
+                    <div class="stat-counter-num" data-count="48000" data-suffix="+">0+</div>
+                    <div class="stat-counter-label">Patients Served</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 reveal reveal-delay-2">
+                <div class="stat-counter-card">
+                    <span class="stat-counter-icon"><i class="fas fa-brain" style="background:linear-gradient(135deg,#818cf8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></i></span>
+                    <div class="stat-counter-num" data-count="98.7" data-suffix="%">0%</div>
+                    <div class="stat-counter-label">AI Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 reveal reveal-delay-3">
+                <div class="stat-counter-card">
+                    <span class="stat-counter-icon"><i class="fas fa-bolt" style="background:linear-gradient(135deg,#818cf8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></i></span>
+                    <div class="stat-counter-num" data-count="1.2" data-suffix="s">0s</div>
+                    <div class="stat-counter-label">Avg. Analysis Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FEATURES SECTION
+═══════════════════════════════════════════════ -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="text-center mb-5 reveal">
+            <span class="section-eyebrow">Platform Capabilities</span>
+            <h2 class="section-title">Everything You Need to<br>Deliver Better Care</h2>
+            <p class="section-subtitle">
+                A comprehensive suite of AI-powered tools designed for every role in your healthcare team.
+            </p>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-4 reveal">
+                <div class="feature-card" style="--feature-accent: linear-gradient(90deg, #6366f1, #818cf8);">
+                    <div class="feature-icon-wrap fi-indigo">
+                        <i class="fas fa-robot" style="color:#818cf8;"></i>
+                    </div>
+                    <h4>AI-Powered Diagnosis</h4>
+                    <p>Deep learning models analyze medical images with radiologist-level accuracy, surfacing findings in under 2 seconds for faster clinical decisions.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+                <div class="feature-card" style="--feature-accent: linear-gradient(90deg, #06b6d4, #22d3ee);">
+                    <div class="feature-icon-wrap fi-cyan">
+                        <i class="fas fa-folder-open" style="color:#22d3ee;"></i>
+                    </div>
+                    <h4>Smart Case Management</h4>
+                    <p>Organize patient cases, track diagnostic workflows, and collaborate seamlessly across departments with intelligent case routing and status tracking.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+                <div class="feature-card" style="--feature-accent: linear-gradient(90deg, #10b981, #34d399);">
+                    <div class="feature-icon-wrap fi-emerald">
+                        <i class="fas fa-chart-line" style="color:#34d399;"></i>
+                    </div>
+                    <h4>Real-Time Analytics</h4>
+                    <p>Interactive dashboards deliver live KPIs — from daily diagnostic volumes to disease distribution trends — giving leadership instant operational clarity.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+                <div class="feature-card" style="--feature-accent: linear-gradient(90deg, #f59e0b, #fbbf24);">
+                    <div class="feature-icon-wrap fi-amber">
+                        <i class="fas fa-shield-halved" style="color:#fbbf24;"></i>
+                    </div>
+                    <h4>Role-Based Access Control</h4>
+                    <p>Granular permissions for SuperAdmins, Admins, Doctors, Radiologists, and Hospital Chiefs ensure everyone sees exactly what they need — nothing more.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+                <div class="feature-card" style="--feature-accent: linear-gradient(90deg, #ec4899, #f472b6);">
+                    <div class="feature-icon-wrap fi-pink">
+                        <i class="fas fa-file-medical" style="color:#f472b6;"></i>
+                    </div>
+                    <h4>Automated Reporting</h4>
+                    <p>Generate comprehensive diagnostic reports with AI-drafted findings, physician sign-off workflows, and structured output ready for EHR integration.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-3">
+                <div class="feature-card" style="--feature-accent: linear-gradient(90deg, #8b5cf6, #a78bfa);">
+                    <div class="feature-icon-wrap fi-violet">
+                        <i class="fas fa-magnifying-glass" style="color:#a78bfa;"></i>
+                    </div>
+                    <h4>Audit &amp; Compliance Logs</h4>
+                    <p>Full tamper-evident audit trails for every action across the platform, ensuring regulatory compliance and internal accountability at every level.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════════ -->
+<section class="how-section" id="how-it-works">
+    <div class="container">
+        <div class="text-center mb-5 reveal">
+            <span class="section-eyebrow">How It Works</span>
+            <h2 class="section-title">From Scan to Insight in Minutes</h2>
+            <p class="section-subtitle" style="color:rgba(255,255,255,0.55);">
+                ClinicAI streamlines your entire diagnostic pipeline in four simple steps.
+            </p>
+        </div>
+
+        <div class="row align-items-center g-3">
+            <div class="col-6 col-md-3 reveal">
+                <div class="step-card">
+                    <div class="step-num">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h5>Upload Image</h5>
+                    <p>Radiologists upload medical images (X-ray, MRI, CT) securely into the system via the case portal.</p>
+                </div>
+            </div>
+
+            <div class="col-1 d-none d-md-flex step-connector">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="col-6 col-md-3 reveal reveal-delay-1">
+                <div class="step-card">
+                    <div class="step-num">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5>AI Analysis</h5>
+                    <p>Our trained deep learning model scans the image, identifies pathology, and scores confidence levels instantly.</p>
+                </div>
+            </div>
+
+            <div class="col-1 d-none d-md-flex step-connector">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="col-6 col-md-3 reveal reveal-delay-2">
+                <div class="step-card">
+                    <div class="step-num">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <h5>Review &amp; Sign</h5>
+                    <p>Doctors review AI findings, annotate the report with clinical notes, and digitally sign for the patient record.</p>
+                </div>
+            </div>
+
+            <div class="col-1 d-none d-md-flex step-connector">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="col-6 col-md-3 reveal reveal-delay-3">
+                <div class="step-card">
+                    <div class="step-num">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                    <h5>Report Delivered</h5>
+                    <p>Finalized reports are available instantly in the patient portal and feed live dashboard analytics.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     ROLE HIGHLIGHTS
+═══════════════════════════════════════════════ -->
+<section class="social-section" id="roles">
+    <div class="container">
+        <div class="text-center mb-5 reveal">
+            <span class="section-eyebrow">Built for Your Role</span>
+            <h2 class="section-title">Tailored for Every Team Member</h2>
+            <p class="section-subtitle">
+                ClinicAI adapts to each user's needs, surfacing only the tools and data that matter most.
+            </p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4 reveal">
+                <div class="role-card">
+                    <div class="role-avatar fi-cyan">
+                        <i class="fas fa-microscope" style="color:#22d3ee;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h6>Radiologist</h6>
+                        <p>Receive AI-pre-analyzed images, flag findings, generate structured reports, and manage your case queue efficiently — with AI doing the heavy lifting.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+                <div class="role-card">
+                    <div class="role-avatar fi-emerald">
+                        <i class="fas fa-stethoscope" style="color:#34d399;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h6>Doctor</h6>
+                        <p>Access patient histories, review diagnostic reports, coordinate care plans, and get AI-assisted clinical decision support at the point of care.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+                <div class="role-card">
+                    <div class="role-avatar fi-amber">
+                        <i class="fas fa-hospital" style="color:#fbbf24;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h6>Hospital Chief</h6>
+                        <p>Oversee your entire department — manage staff, monitor throughput, review subscription status, and make data-driven decisions from a live analytics hub.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal">
+                <div class="role-card">
+                    <div class="role-avatar fi-indigo">
+                        <i class="fas fa-shield-halved" style="color:#818cf8;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h6>Admin</h6>
+                        <p>Control user access, monitor AI model performance, manage datasets for model training, and maintain full audit trails across the organization.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+                <div class="role-card">
+                    <div class="role-avatar fi-violet">
+                        <i class="fas fa-crown" style="color:#a78bfa;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h6>Super Admin</h6>
+                        <p>Platform-wide oversight: manage hospitals, configure smart AI models, set subscription tiers, and maintain global system settings — ultimate control.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+                <div class="role-card">
+                    <div class="role-avatar fi-pink">
+                        <i class="fas fa-chart-line" style="color:#f472b6;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h6>Analytics at Every Level</h6>
+                        <p>No matter your role, ClinicAI surfaces the metrics that matter — tailored dashboards, trend analyses, and alerts keep everyone informed and proactive.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     CTA SECTION
+═══════════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="hero-glow hero-glow-1"></div>
+
+    <div class="container" style="position:relative; z-index:2;">
+        <div class="reveal">
+            <span class="section-eyebrow" style="color:#a5b4fc;">Ready to Transform Your Clinic?</span>
+            <h2>Start Diagnosing Smarter<br>with <span class="gradient-text">ClinicAI</span></h2>
+            <p>Join over 120 hospitals already using AI-powered diagnostics<br>to deliver faster, more accurate patient care.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a asp-controller="Account" asp-action="Login" class="btn-hero-primary" id="ctaGetStarted">
+                    <i class="fas fa-rocket"></i> Get Started Free
+                </a>
+                <a asp-controller="Dashboard" asp-action="Index" class="btn-hero-secondary" id="ctaDashboard">
+                    <i class="fas fa-chart-bar"></i> Explore Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Spin the AI spinner icon in mock rows
+        const spinners = document.querySelectorAll('.fa-spinner');
+        spinners.forEach(function (el) {
+            el.classList.add('fa-spin');
+        });
+    });
+</script>
+}

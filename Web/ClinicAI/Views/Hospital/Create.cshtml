@@ -1,0 +1,59 @@
+@model ClinicAI.Models.Hospital
+@{
+    ViewData["Title"] = "Register Hospital";
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container py-4 animate-fade-in" style="max-width: 600px;">
+    <div class="mb-3">
+        <a href="@Url.Action("Index")" class="text-muted text-decoration-none">← Back to Hospitals</a>
+    </div>
+
+    <div class="mb-4">
+        <h1 class="font-weight-bold"><i class="fas fa-plus"></i> Register Hospital</h1>
+        <p class="text-muted">Fill out the form below to enroll a new medical facility.</p>
+    </div>
+
+    <div class="glass-card">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Name" class="glass-label">Hospital Name</label>
+                <input asp-for="Name" class="glass-input" placeholder="e.g. Hope General Hospital" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="glass-label">Email Address</label>
+                <input asp-for="Email" type="email" class="glass-input" placeholder="e.g. contact@hopehospital.com" required />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="glass-label">Phone Number</label>
+                <input asp-for="Phone" class="glass-input" placeholder="e.g. +1 (555) 019-2834" required />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="glass-label">Location / Address</label>
+                <input asp-for="Address" class="glass-input" placeholder="e.g. 123 Health Ave, New York, NY" required />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="glass-label d-block">Initial Status</label>
+                <div class="form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" style="width: 40px; height: 20px; cursor: pointer;" />
+                    <label class="form-check-label text-muted ms-2" for="IsActive">Mark as Active immediately</label>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3" style="gap: 1rem;">
+                <a href="@Url.Action("Index")" class="btn-glass-secondary">Cancel</a>
+                <button type="submit" class="btn-glass"><i class="fas fa-floppy-disk"></i> Register</button>
+            </div>
+        </form>
+    </div>
+</div>

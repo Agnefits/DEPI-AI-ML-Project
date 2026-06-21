@@ -1,0 +1,94 @@
+@model IEnumerable<ClinicAI.Models.AuditLog>
+@{
+    ViewData["Title"] = "System Audit Logs";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">System Audit Logs</h1>
+            <p class="text-muted">Trace actions, modifications, data changes, and account logins (Who did What).</p>
+        </div>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>User Name</th>
+                        <th>Action</th>
+                        <th>Affected Item</th>
+                        <th>Item ID</th>
+                        <th>Old Value Context</th>
+                        <th>New Value Context</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td class="font-weight-bold" style="color: #cbd5e1;">#@log.Id</td>
+                            <td class="font-weight-bold">
+                                @(log.User?.FullName ?? "System Process / Unknown")
+                            </td>
+                            <td>
+                                @if (log.Action.Contains("Approve") || log.Action.Contains("Sign"))
+                                {
+                                    <span class="status-badge status-active"><i class="fa-solid fa-pen-nib me-1"></i> @log.Action</span>
+                                }
+                                else if (log.Action.Contains("Edit") || log.Action.Contains("Update"))
+                                {
+                                    <span class="status-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-pen me-1"></i> @log.Action</span>
+                                }
+                                else if (log.Action.Contains("Delete") || log.Action.Contains("Suspend"))
+                                {
+                                    <span class="status-badge status-inactive"><i class="fa-solid fa-xmark me-1"></i> @log.Action</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-gear me-1"></i> @log.Action</span>
+                                }
+                            </td>
+                            <td>
+                                <code>@log.EntityName</code>
+                            </td>
+                            <td style="color: #38bdf8;">#@log.EntityId</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(log.OldValue))
+                                {
+                                    <small class="text-muted" title="@log.OldValue">
+                                        @(log.OldValue.Length > 40 ? log.OldValue.Substring(0, 37) + "..." : log.OldValue)
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted" style="font-size: 0.85rem;">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(log.NewValue))
+                                {
+                                    <small class="text-muted" title="@log.NewValue">
+                                        @(log.NewValue.Length > 40 ? log.NewValue.Substring(0, 37) + "..." : log.NewValue)
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted" style="font-size: 0.85rem;">-</span>
+                                }
+                            </td>
+                            <td>@log.CreatedAt.ToString("MMM dd, yyyy (hh:mm tt)")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

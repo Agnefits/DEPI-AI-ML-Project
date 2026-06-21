@@ -1,0 +1,135 @@
+@model ClinicAI.ViewModels.AiMonitoring.AiMonitoringVM
+@{
+    ViewData["Title"] = "AI Model Performance Monitoring";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">AI Model Performance</h1>
+            <p class="text-muted">Monitor diagnostic run stats, model processing speeds, and confidence thresholds.</p>
+        </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <!-- Analyses Run Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-brain"></i></div>
+            <div class="stat-value">@Model.TotalAnalysesCount</div>
+            <div class="stat-label">Total Predictions</div>
+        </div>
+
+        <!-- Accuracy (Confidence) Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <div class="stat-value">@Model.AverageAccuracy%</div>
+            <div class="stat-label">Avg Confidence</div>
+        </div>
+
+        <!-- Processing Speed Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div class="stat-value">@Model.AverageProcessingTime s</div>
+            <div class="stat-label">Avg Latency</div>
+        </div>
+
+        <!-- Failed Predictions Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-value" style="color: #f87171;">@Model.FailedPredictionsCount</div>
+            <div class="stat-label">Low Confidence runs (< @(Model.ConfidenceThreshold * 100)%)</div>
+        </div>
+    </div>
+
+    <!-- Model Metadata -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="glass-card h-100">
+                <h4 class="mb-3 font-weight-bold">Model Configuration</h4>
+                <table class="table table-borderless text-white m-0" style="font-size: 0.95rem;">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted pl-0" style="width: 180px;">Active Model:</td>
+                            <td class="font-weight-bold" style="color: #818cf8;">@Model.ModelName</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted pl-0">Model Framework:</td>
+                            <td>Gemini Multimodal Vision API</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted pl-0">Deployment Type:</td>
+                            <td>Cloud API Web Services</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted pl-0">API Connection Status:</td>
+                            <td><span class="status-badge status-active">Online</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="glass-card h-100">
+                <h4 class="mb-3 font-weight-bold">Performance Threshold Notes</h4>
+                <p class="text-muted" style="font-size: 0.9rem; line-height: 1.6;">
+                    System registers analyses with a confidence rating below the default <strong>@(Model.ConfidenceThreshold * 100)%</strong> as low confidence predictions.
+                    Low confidence outputs are flagged with alert notices in patient medical records to suggest clinicians double-check the scans manually before finalizing diagnoses.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Run Logs -->
+    <div class="glass-card">
+        <h4 class="mb-4 font-weight-bold">Recent AI Predictions Log</h4>
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Analysis ID</th>
+                        <th>Case Ref</th>
+                        <th>Patient Name</th>
+                        <th>Model Version</th>
+                        <th>Confidence</th>
+                        <th>Processing Time</th>
+                        <th>Diagnostic Findings Snippet</th>
+                        <th>Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.RecentAnalyses)
+                    {
+                        <tr>
+                            <td class="font-weight-bold" style="color: #a5b4fc;">#@log.AnalysisId</td>
+                            <td>#@log.CaseId</td>
+                            <td class="font-weight-bold">@log.PatientName</td>
+                            <td><code>@log.ModelVersion</code></td>
+                            <td>
+                                <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                    <div class="progress" style="width: 60px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 9999px;">
+                                        <div class="progress-bar" style="width: @log.Confidence%; background: @(log.IsSuccess ? "#10b981" : "#ef4444")"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: @(log.IsSuccess ? "#10b981" : "#ef4444")">@log.Confidence%</span>
+                                </div>
+                            </td>
+                            <td>@log.ProcessingTime s</td>
+                            <td>
+                                <span class="text-muted" style="font-size: 0.85rem;">@log.Findings</span>
+                            </td>
+                            <td>
+                                <span class="status-badge @(log.IsSuccess ? "status-active" : "status-inactive")">
+                                    @(log.IsSuccess ? "High Confidence" : "Low Confidence Alert")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

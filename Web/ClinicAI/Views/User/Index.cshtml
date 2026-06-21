@@ -1,0 +1,112 @@
+@model IEnumerable<ClinicAI.ViewModels.User.UserVM>
+@{
+    ViewData["Title"] = "Staff Management";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">Staff Management</h1>
+                <p class="text-muted">Manage system administrators, doctors, and radiologists.</p>
+            </div>
+            <a href="@Url.Action("Create")" class="btn-glass">
+                <i class="fas fa-plus"></i> Add Staff Member
+            </a>
+        </div>
+    </div>
+
+    <!-- Users Grid/Table -->
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Staff Profile</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Hospital</th>
+                        <th>Specialization</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="mr-3" style="width: 45px; height: 45px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.15);">
+                                            @if (!string.IsNullOrEmpty(user.ImageUrl))
+                                            {
+                                                <img src="~/@user.ImageUrl" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white font-weight-bold">
+                                                    @user.FullName.Substring(0, Math.Min(2, user.FullName.Length)).ToUpper()
+                                                </div>
+                                            }
+                                        </div>
+                                        <div>
+                                            <div class="font-weight-bold">@user.FullName</div>
+                                            <small class="text-muted">@user.Phone</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Username</td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <span class="status-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3);">
+                                        @user.RoleName
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3);">
+                                        @user.HospitalName
+                                    </span>
+                                </td>
+                                <td>@(string.IsNullOrEmpty(user.Specialization) ? "-" : user.Specialization)</td>
+                                <td>
+                                    <span class="status-badge @(user.IsActive ? "status-active" : "status-inactive")">
+                                        @(user.IsActive ? "Active" : "Suspended")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                        <!-- Edit button -->
+                                        <a href="@Url.Action("Edit", new { id = user.Id })" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px;">
+                                            <i class="fas fa-pen"></i> Edit
+                                        </a>
+
+                                        <!-- Toggle Status button -->
+                                        <form asp-action="ToggleActive" asp-route-id="@user.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px; color: @(user.IsActive ? "#ef4444" : "#10b981");">
+                                                @(user.IsActive ? "<i class=\"fas fa-pause\"></i> Suspend" : "<i class=\"fas fa-play\"></i> Activate")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                No staff members registered.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

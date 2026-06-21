@@ -1,0 +1,79 @@
+@model ClinicAI.Models.Subscription
+@{
+    ViewData["Title"] = "Create Subscription";
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container py-4 animate-fade-in" style="max-width: 600px;">
+    <div class="mb-3">
+        <a href="@Url.Action("Index")" class="text-muted text-decoration-none">← Back to Subscriptions</a>
+    </div>
+
+    <div class="mb-4">
+        <h1 class="font-weight-bold"><i class="fas fa-plus"></i> Create Subscription</h1>
+        <p class="text-muted">Set up a billing license plan and timeline for a registered hospital.</p>
+    </div>
+
+    <div class="glass-card">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- Hospital Selection -->
+            <div class="mb-3">
+                <label asp-for="HospitalId" class="glass-label">Select Hospital</label>
+                <select asp-for="HospitalId" asp-items="ViewBag.HospitalsList" class="glass-input bg-dark text-white" style="height: 46px;" required>
+                    <option value="">-- Choose Hospital --</option>
+                </select>
+                <span asp-validation-for="HospitalId" class="text-danger"></span>
+            </div>
+
+            <!-- Plan Name -->
+            <div class="mb-3">
+                <label asp-for="PlanName" class="glass-label">Plan Name</label>
+                <select asp-for="PlanName" class="glass-input bg-dark text-white" style="height: 46px;" required>
+                    <option value="Basic Tier">Basic Tier</option>
+                    <option value="Professional Premium">Professional Premium</option>
+                    <option value="Enterprise Clinic Suite">Enterprise Clinic Suite</option>
+                </select>
+                <span asp-validation-for="PlanName" class="text-danger"></span>
+            </div>
+
+            <!-- Price -->
+            <div class="mb-3">
+                <label asp-for="Price" class="glass-label">Subscription Price (USD)</label>
+                <input asp-for="Price" type="number" step="0.01" class="glass-input" placeholder="e.g. 1500.00" required />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <!-- Start Date -->
+            <div class="mb-3">
+                <label asp-for="StartDate" class="glass-label">Start Date</label>
+                <input asp-for="StartDate" type="date" value="@Model.StartDate.ToString("yyyy-MM-dd")" class="glass-input" required />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+
+            <!-- End Date -->
+            <div class="mb-3">
+                <label asp-for="EndDate" class="glass-label">End Date</label>
+                <input asp-for="EndDate" type="date" value="@Model.EndDate.ToString("yyyy-MM-dd")" class="glass-input" required />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-4">
+                <label asp-for="Status" class="glass-label">Initial Status</label>
+                <select asp-for="Status" class="glass-input bg-dark text-white" style="height: 46px;" required>
+                    <option value="Active">Active</option>
+                    <option value="Suspended">Suspended</option>
+                    <option value="Expired">Expired</option>
+                </select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3" style="gap: 1rem;">
+                <a href="@Url.Action("Index")" class="btn-glass-secondary">Cancel</a>
+                <button type="submit" class="btn-glass"><i class="fas fa-floppy-disk"></i> Create</button>
+            </div>
+        </form>
+    </div>
+</div>

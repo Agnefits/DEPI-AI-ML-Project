@@ -1,0 +1,137 @@
+@model IEnumerable<ClinicAI.ViewModels.Patient.PatientVM>
+@{
+    ViewData["Title"] = "Patient Registry";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">Patient Registry</h1>
+            <p class="text-muted">Search, monitor, archive, and assign patients to supervising clinical doctors.</p>
+        </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="glass-card mb-4" style="padding: 1.25rem;">
+        <form method="get" asp-action="Index" class="row align-items-end">
+            <!-- Search Text -->
+            <div class="col-md-5 mb-2 mb-md-0">
+                <label class="glass-label mb-1" style="font-size: 0.85rem;">Search Patient</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="glass-input" placeholder="Type patient name or MRN..." style="height: 42px;" />
+            </div>
+
+            <!-- Status Dropdown -->
+            <div class="col-md-3 mb-2 mb-md-0">
+                <label class="glass-label mb-1" style="font-size: 0.85rem;">Status Filter</label>
+                <select name="statusFilter" class="glass-input bg-dark text-white" style="height: 42px;">
+                    <option value="">All Statuses</option>
+                    @if ((string)ViewData["CurrentStatusFilter"]! == "Active")
+                    {
+                        <option value="Active" selected>Active Patients Only</option>
+                    }
+                    else
+                    {
+                        <option value="Active">Active Patients Only</option>
+                    }
+                    @if ((string)ViewData["CurrentStatusFilter"]! == "Archived")
+                    {
+                        <option value="Archived" selected>Archived Patients Only</option>
+                    }
+                    else
+                    {
+                        <option value="Archived">Archived Patients Only</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-md-4 d-flex gap-2" style="gap: 0.5rem;">
+                <button type="submit" class="btn-glass w-100" style="height: 42px; padding: 0;"><i class="fas fa-magnifying-glass"></i> Search</button>
+                <a href="@Url.Action("Index")" class="btn-glass-secondary w-100" style="height: 42px; padding: 0; align-items: center; display: inline-flex; justify-content: center;"><i class="fas fa-rotate"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Patients List -->
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>MRN</th>
+                        <th>Full Name</th>
+                        <th>Gender</th>
+                        <th>Date of Birth</th>
+                        <th>Blood Group</th>
+                        <th>Supervising Doctor</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var patient in Model)
+                        {
+                            <tr>
+                                <td class="font-weight-bold" style="color: #a5b4fc;">@patient.MedicalRecordNumber</td>
+                                <td>
+                                    <div>
+                                        <div class="font-weight-bold">@patient.FullName</div>
+                                        <small class="text-muted">@patient.Phone</small>
+                                    </div>
+                                </td>
+                                <td>@patient.Gender</td>
+                                <td>@patient.DOB.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <span class="status-badge" style="background: rgba(6, 182, 212, 0.1); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.2);">
+                                        @(string.IsNullOrEmpty(patient.BloodGroup) ? "N/A" : patient.BloodGroup)
+                                    </span>
+                                </td>
+                                <td>@patient.DoctorName</td>
+                                <td>
+                                    <span class="status-badge @(patient.IsArchived ? "status-inactive" : "status-active")">
+                                        @(patient.IsArchived ? "Archived" : "Active")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                        <!-- Edit button -->
+                                        <a href="@Url.Action("Edit", new { id = patient.Id })" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px;">
+                                            <i class="fas fa-pen"></i> Edit
+                                        </a>
+
+                                        <!-- Toggle Archive button -->
+                                        <form asp-action="ToggleArchive" asp-route-id="@patient.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px; color: @(patient.IsArchived ? "#10b981" : "#f59e0b");">
+                                                @if (patient.IsArchived)
+                                                {
+                                                    <i class="fas fa-download"></i> @:Restore
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-box-archive"></i> @:Archive
+                                                }
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                No patients matching the query were found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

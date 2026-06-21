@@ -1,0 +1,103 @@
+@model IEnumerable<ClinicAI.ViewModels.Report.ReportEditVM>
+@{
+    ViewData["Title"] = "Reports Center";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">Reports Center</h1>
+            <p class="text-muted">Review generated diagnosis reports, edit contents, and sign/approve clinical records.</p>
+        </div>
+    </div>
+
+    <!-- Reports Grid -->
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Case ID</th>
+                        <th>Patient Name</th>
+                        <th>Status</th>
+                        <th>PDF Attachment</th>
+                        <th>Comments</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var r in Model)
+                        {
+                            <tr>
+                                <td class="font-weight-bold" style="color: #a5b4fc;">#@r.Id</td>
+                                <td>#@r.CaseId</td>
+                                <td class="font-weight-bold">@r.PatientName</td>
+                                <td>
+                                    @if (r.Status == "Approved/Signed")
+                                    {
+                                        <span class="status-badge status-active"><i class="fas fa-signature"></i> Signed</span>
+                                    }
+                                    else if (r.Status == "Pending Re-Approval")
+                                    {
+                                        <span class="status-badge" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2);"><i class="fas fa-hourglass-half"></i> Modified / Pending</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.2);"><i class="fas fa-magnifying-glass"></i> @r.Status</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(r.ReportPdf))
+                                    {
+                                        <a href="~/@r.ReportPdf" target="_blank" class="text-decoration-none" style="color: #06b6d4;"><i class="fas fa-file-pdf"></i> View PDF</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No PDF File</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        @(string.IsNullOrEmpty(r.AdditionalInformation) ? "-" : r.AdditionalInformation)
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                        <!-- Edit content -->
+                                        <a href="@Url.Action("Edit", new { id = r.Id })" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px;">
+                                            <i class="fas fa-pen"></i> Edit Content
+                                        </a>
+
+                                        <!-- Sign / Approve -->
+                                        @if (r.Status != "Approved/Signed")
+                                        {
+                                            <form asp-action="Approve" asp-route-id="@r.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn-glass" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px; box-shadow: none;">
+                                                    <i class="fas fa-signature"></i> Sign & Approve
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                No diagnostic reports have been generated yet.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

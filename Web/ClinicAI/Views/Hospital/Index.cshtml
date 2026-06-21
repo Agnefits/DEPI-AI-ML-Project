@@ -1,0 +1,78 @@
+@model IEnumerable<ClinicAI.Models.Hospital>
+@{
+    ViewData["Title"] = "Hospitals Management";
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <div class="row mb-4 align-items-center">
+        <div class="col-sm-6">
+            <h1 class="font-weight-bold" style="letter-spacing: -0.5px;"><i class="fas fa-hospital"></i> Hospitals</h1>
+            <p class="text-muted">Register, configure, and monitor hospitals enrolled in the network.</p>
+        </div>
+        <div class="col-sm-6 text-sm-end">
+            <a href="@Url.Action("Create")" class="btn-glass"><i class="fas fa-plus"></i> Register Hospital</a>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Hospital Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var h in Model)
+                        {
+                            <tr>
+                                <td class="font-weight-bold" style="color: #a5b4fc;">@h.Name</td>
+                                <td>@h.Email</td>
+                                <td>@h.Phone</td>
+                                <td>@h.Address</td>
+                                <td>
+                                    @if (h.IsActive)
+                                    {
+                                        <span class="status-badge status-active">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-inactive">Inactive</span>
+                                    }
+                                </td>
+                                <td>@h.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                         <a href="@Url.Action("Edit", new { id = h.Id })" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px;">
+                                             <i class="fas fa-pen"></i> Edit
+                                         </a>
+                                         <form asp-action="ToggleActive" asp-route-id="@h.Id" method="post" class="d-inline">
+                                             <button type="submit" class="btn-glass-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border-color: rgba(239, 68, 68, 0.2); color: #f87171;">
+                                                 <i class="fas fa-gear"></i> Toggle Status
+                                             </button>
+                                         </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">No hospitals registered yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

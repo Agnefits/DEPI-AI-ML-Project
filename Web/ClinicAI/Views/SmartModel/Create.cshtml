@@ -1,0 +1,59 @@
+@model ClinicAI.Models.SmartModel
+@{
+    ViewData["Title"] = "Register Smart Model";
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container py-4 animate-fade-in" style="max-width: 600px;">
+    <div class="mb-3">
+        <a href="@Url.Action("Index")" class="text-muted text-decoration-none">← Back to Models</a>
+    </div>
+
+    <div class="mb-4">
+        <h1 class="font-weight-bold"><i class="fas fa-plus"></i> Register AI Model</h1>
+        <p class="text-muted">Register a new diagnostic neural network version in the system.</p>
+    </div>
+
+    <div class="glass-card">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Name" class="glass-label">Model Name</label>
+                <input asp-for="Name" class="glass-input" placeholder="e.g. Chest X-Ray Classifier" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Version" class="glass-label">Model Version</label>
+                <input asp-for="Version" class="glass-input" placeholder="e.g. v2.4-alpha" required />
+                <span asp-validation-for="Version" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Accuracy" class="glass-label">Validation Accuracy (e.g. 0.945)</label>
+                <input asp-for="Accuracy" type="number" step="0.001" min="0" max="1" class="glass-input" placeholder="e.g. 0.95" required />
+                <span asp-validation-for="Accuracy" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="glass-label">Description / Details</label>
+                <textarea asp-for="Description" class="glass-input" rows="4" placeholder="Briefly describe what this model does, target anomalies, parameters, etc." required></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="glass-label d-block">Initial Status</label>
+                <div class="form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" style="width: 40px; height: 20px; cursor: pointer;" />
+                    <label class="form-check-label text-muted ms-2" for="IsActive">Mark as Active immediately</label>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3" style="gap: 1rem;">
+                <a href="@Url.Action("Index")" class="btn-glass-secondary">Cancel</a>
+                <button type="submit" class="btn-glass"><i class="fas fa-floppy-disk"></i> Register</button>
+            </div>
+        </form>
+    </div>
+</div>

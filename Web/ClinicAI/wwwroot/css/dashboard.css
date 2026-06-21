@@ -1,0 +1,291 @@
+/* ClinicAI Premium Glassmorphic Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    /* Light theme dashboard variables/gradient (sleek light indigo/slate) */
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #f1f5f9 100%);
+}
+
+[data-theme="dark"] {
+    /* Dark dashboard variables (always dark for charts) */
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover-bg: rgba(255, 255, 255, 0.08);
+    --card-hover-border: rgba(255, 255, 255, 0.16);
+    --accent-glow: rgba(99, 102, 241, 0.15);
+
+    --text-primary: #f8fafc;
+    --text-muted: #94a3b8;
+
+    --clr-primary: #6366f1;
+    --clr-success: #10b981;
+    --clr-warning: #f59e0b;
+    --clr-danger:  #ef4444;
+    --clr-info:    #06b6d4;
+}
+
+/* Dashboard pages use the dark gradient background directly */
+.container-fluid.animate-fade-in {
+    background: transparent;
+}
+
+
+
+/* Glassmorphism card utility */
+.glass-card {
+    background: var(--glass-card-bg, rgba(255,255,255,0.04));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-card-border, rgba(255,255,255,0.08));
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow, 0 8px 32px rgba(0,0,0,0.37));
+    transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    color: var(--text-primary);
+}
+
+.glass-card:hover {
+    border-color: rgba(99,102,241,0.25);
+    box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Page animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Dashboard Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+    /* gradient only in dark mode where white text is needed */
+}
+[data-theme="dark"] .stat-value {
+    background: linear-gradient(to right, #ffffff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Glassmorphic Table design */
+.table-responsive {
+    border-radius: 20px;
+    overflow-x: auto;
+    overflow-y: visible;
+    border: 1px solid var(--glass-table-border, rgba(255,255,255,0.06));
+    width: 100%;
+}
+
+.glass-table {
+    width: 100% !important;
+    min-width: 650px;
+    border-collapse: collapse;
+    background: var(--glass-table-bg, rgba(15,23,42,0.3));
+    backdrop-filter: blur(12px);
+}
+
+.glass-table th {
+    background: var(--glass-table-head, rgba(255,255,255,0.03));
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--glass-th-color, #94a3b8);
+    border-bottom: 1px solid var(--glass-table-border, rgba(255,255,255,0.06));
+    white-space: nowrap;
+}
+
+.glass-table td {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--glass-table-border, rgba(255,255,255,0.05));
+    color: var(--glass-td-color, #cbd5e1);
+    transition: background 0.2s ease;
+}
+
+.glass-table tr:last-child td {
+    border-bottom: none;
+}
+
+.glass-table tr:hover td {
+    background: rgba(99,102,241,0.05);
+}
+
+/* Forms styling */
+.glass-input {
+    background: var(--input-bg, rgba(255,255,255,0.05));
+    border: 1px solid var(--input-border, rgba(255,255,255,0.1));
+    color: var(--input-text, #f1f5f9);
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
+}
+
+.glass-input::placeholder {
+    color: var(--input-placeholder, rgba(255,255,255,0.35));
+}
+
+.glass-input:focus {
+    background: var(--input-bg);
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+}
+
+.glass-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.4rem;
+    color: var(--text-secondary);
+    display: inline-block;
+}
+
+/* Button aesthetics */
+.btn-glass {
+    background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+    border: none;
+    color: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-glass:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    opacity: 0.95;
+}
+
+.btn-glass-secondary {
+    background: var(--glass-card-bg, rgba(255,255,255,0.06));
+    border: 1px solid var(--glass-card-border, rgba(255,255,255,0.1));
+    color: var(--text-primary);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-glass-secondary:hover {
+    background: rgba(99,102,241,0.12);
+    border-color: rgba(99,102,241,0.3);
+    transform: translateY(-2px);
+    color: var(--text-primary);
+}
+
+.btn-glass-danger {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-glass-danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* User badges & status chips */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--clr-success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--clr-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Chart Canvas container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}

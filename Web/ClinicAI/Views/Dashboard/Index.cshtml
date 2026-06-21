@@ -1,0 +1,210 @@
+@model ClinicAI.ViewModels.Dashboard.DashboardVM
+@{
+    ViewData["Title"] = "Analytics Dashboard";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">Analytics Overview</h1>
+                <p class="text-muted">Real-time statistics, diagnoses, and AI performance indicators.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <!-- Users Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-value">@Model.UsersCount</div>
+            <div class="stat-label">Active Staff</div>
+        </div>
+
+        <!-- Patients Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-hospital-user"></i></div>
+            <div class="stat-value">@Model.PatientsCount</div>
+            <div class="stat-label">Registered Patients</div>
+        </div>
+
+        <!-- Cases Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+            <div class="stat-value">@Model.CasesCount</div>
+            <div class="stat-label">Clinical Cases</div>
+        </div>
+
+        <!-- Diagnoses Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-stethoscope"></i></div>
+            <div class="stat-value">@Model.DiagnosesCount</div>
+            <div class="stat-label">Diagnoses Logged</div>
+        </div>
+
+        <!-- AI Usage Card -->
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-brain"></i></div>
+            <div class="stat-value">@Model.AIUsageCount</div>
+            <div class="stat-label">AI Analyses Run</div>
+        </div>
+    </div>
+
+    <!-- Charts Area -->
+    <div class="row mb-4">
+        <!-- Daily trend -->
+        <div class="col-lg-8 mb-4">
+            <div class="glass-card h-100">
+                <h4 class="mb-4 font-weight-bold">Daily Diagnostic Cases</h4>
+                <div class="chart-container">
+                    <canvas id="dailyCasesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disease distribution -->
+        <div class="col-lg-4 mb-4">
+            <div class="glass-card h-100">
+                <h4 class="mb-4 font-weight-bold">Common Diseases</h4>
+                <div class="chart-container">
+                    <canvas id="diseaseDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Monthly trend -->
+        <div class="col-12 mb-4">
+            <div class="glass-card">
+                <h4 class="mb-4 font-weight-bold">Monthly Trend Analysis</h4>
+                <div class="chart-container" style="height: 350px;">
+                    <canvas id="monthlyCasesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ChartJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Common ChartJS Configuration
+        const textColor = '#94a3b8';
+        const gridColor = 'rgba(255, 255, 255, 0.05)';
+
+        // 1. Daily Cases Chart (Line Chart)
+        const dailyCtx = document.getElementById('dailyCasesChart').getContext('2d');
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.DailyLabels)),
+                datasets: [{
+                    label: 'Cases Logged',
+                    data: @Html.Raw(Json.Serialize(Model.DailyData)),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#818cf8',
+                    pointBorderColor: '#ffffff',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, precision: 0 }
+                    }
+                }
+            }
+        });
+
+        // 2. Disease Distribution Chart (Doughnut Chart)
+        const diseaseCtx = document.getElementById('diseaseDistributionChart').getContext('2d');
+        new Chart(diseaseCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.DiseaseLabels)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.DiseaseData)),
+                    backgroundColor: [
+                        '#6366f1', // Indigo
+                        '#10b981', // Emerald
+                        '#f59e0b', // Amber
+                        '#06b6d4', // Cyan
+                        '#ec4899'  // Pink
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor,
+                            padding: 15,
+                            font: { family: "'Outfit', sans-serif" }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // 3. Monthly Cases Chart (Bar Chart)
+        const monthlyCtx = document.getElementById('monthlyCasesChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.MonthlyLabels)),
+                datasets: [{
+                    label: 'Cases',
+                    data: @Html.Raw(Json.Serialize(Model.MonthlyData)),
+                    backgroundColor: 'rgba(6, 182, 212, 0.75)',
+                    hoverBackgroundColor: '#06b6d4',
+                    borderRadius: 10,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: textColor }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, precision: 0 }
+                    }
+                }
+            }
+        });
+    });
+</script>

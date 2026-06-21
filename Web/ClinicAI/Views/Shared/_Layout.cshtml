@@ -1,0 +1,364 @@
+@{
+    var userRole = Context.Items["UserRole"] as string;
+    if (string.IsNullOrEmpty(userRole) && User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    }
+    
+    var userName = Context.Items["Username"] as string;
+    if (string.IsNullOrEmpty(userName) && User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        userName = User.Identity.Name;
+    }
+
+    var isAuthenticated = !string.IsNullOrEmpty(userRole);
+
+    // Build initials for avatar
+    var initials = "U";
+    if (!string.IsNullOrEmpty(userName))
+    {
+        var parts = userName.Trim().Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+        initials = parts.Length >= 2
+            ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
+            : userName.Substring(0, Math.Min(2, userName.Length)).ToUpper();
+    }
+
+    // Role FA icon class
+    var roleIconClass = userRole switch
+    {
+        "SuperAdmin"   => "fa-crown",
+        "Admin"        => "fa-shield-halved",
+        "Doctor"       => "fa-stethoscope",
+        "Radiologist"  => "fa-microscope",
+        "HospitalChef" => "fa-hospital",
+        _              => "fa-user"
+    };
+
+    // Fetch profile image URL from context (set by middleware or controller)
+    var userImageUrl = Context.Items["UserImageUrl"] as string;
+    if (string.IsNullOrEmpty(userImageUrl) && User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        // Try to get from user claim if set
+        userImageUrl = User.FindFirst("ImageUrl")?.Value;
+    }
+}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ClinicAI — AI-powered clinical intelligence platform for modern healthcare." />
+    <title>@ViewData["Title"] - ClinicAI</title>
+    <script type="importmap"></script>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Font Awesome 6 Free -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Site styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ClinicAI.styles.css" asp-append-version="true" />
+
+    <style>
+        /* Role badge colors */
+        .role-superadmin { background: rgba(245,158,11,0.15);  border-color: rgba(245,158,11,0.3);  color: #fbbf24; }
+        .role-admin      { background: rgba(99,102,241,0.15);  border-color: rgba(99,102,241,0.3);  color: #a5b4fc; }
+        .role-doctor     { background: rgba(16,185,129,0.15);  border-color: rgba(16,185,129,0.3);  color: #6ee7b7; }
+        .role-radio      { background: rgba(6,182,212,0.15);   border-color: rgba(6,182,212,0.3);   color: #67e8f9; }
+        .role-chef       { background: rgba(236,72,153,0.15);  border-color: rgba(236,72,153,0.3);  color: #f9a8d4; }
+        .role-default    { background: rgba(148,163,184,0.1);  border-color: rgba(148,163,184,0.2); color: #94a3b8; }
+
+        .role-pill {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.55rem;
+            border-radius: 50px;
+            border: 1px solid;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        /* Nav link icon sizing */
+        .clinicai-navbar .nav-link i {
+            font-size: 0.8rem;
+            width: 14px;
+            text-align: center;
+        }
+        /* Brand brain icon */
+        .brand-icon i { font-size: 1rem; color: #fff; }
+    </style>
+</head>
+<body>
+    <!-- ══ NAVBAR ══════════════════════════════════════════ -->
+    <header>
+        <nav class="navbar navbar-expand-lg clinicai-navbar" id="mainNav">
+            <div class="container-fluid px-4">
+
+                <!-- Brand -->
+                <a class="navbar-brand-clinicai" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-icon"><i class="fas fa-brain"></i></span>
+                    <span class="brand-text">ClinicAI</span>
+                </a>
+
+                <!-- Mobile toggler -->
+                <button class="navbar-toggler ms-auto me-2" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                        aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Collapsible content -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+
+                    <!-- Left nav links -->
+                    <ul class="navbar-nav me-auto ms-3 gap-1">
+                        @if (isAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="fas fa-chart-line"></i> Dashboard
+                                </a>
+                            </li>
+
+                            @if (userRole == "SuperAdmin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Hospital" asp-action="Index">
+                                        <i class="fas fa-hospital"></i> Hospitals
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Subscription" asp-action="Index">
+                                        <i class="fas fa-key"></i> Subscriptions
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="SmartModel" asp-action="Index">
+                                        <i class="fas fa-robot"></i> Smart Models
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="User" asp-action="Index">
+                                        <i class="fas fa-users"></i> Staff
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="AuditLog" asp-action="Index">
+                                        <i class="fas fa-magnifying-glass"></i> Audit Logs
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="SystemSettings" asp-action="Index">
+                                        <i class="fas fa-gear"></i> Settings
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "Admin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="User" asp-action="Index">
+                                        <i class="fas fa-users"></i> Staff
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="AiMonitoring" asp-action="Index">
+                                        <i class="fas fa-brain"></i> AI Performance
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Dataset" asp-action="Index">
+                                        <i class="fas fa-folder-open"></i> Dataset
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="AuditLog" asp-action="Index">
+                                        <i class="fas fa-magnifying-glass"></i> Audit Logs
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Subscription" asp-action="Index">
+                                        <i class="fas fa-key"></i> Subscriptions
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "Radiologist")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Case" asp-action="Index">
+                                        <i class="fas fa-folder-open"></i> Cases
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Report" asp-action="Index">
+                                        <i class="fas fa-file-medical"></i> Reports
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "Doctor")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Patient" asp-action="Index">
+                                        <i class="fas fa-hospital-user"></i> Patients
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Case" asp-action="Index">
+                                        <i class="fas fa-folder-open"></i> Cases
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Report" asp-action="Index">
+                                        <i class="fas fa-file-medical"></i> Reports
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "HospitalChef")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="User" asp-action="Index">
+                                        <i class="fas fa-users"></i> Staff
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Patient" asp-action="Index">
+                                        <i class="fas fa-hospital-user"></i> Patients
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Case" asp-action="Index">
+                                        <i class="fas fa-folder-open"></i> Cases
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Report" asp-action="Index">
+                                        <i class="fas fa-file-medical"></i> Reports
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Subscription" asp-action="Index">
+                                        <i class="fas fa-key"></i> Subscriptions
+                                    </a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">
+                                    <i class="fas fa-house"></i> Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#features">
+                                    <i class="fas fa-cubes"></i> Features
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#how-it-works">
+                                    <i class="fas fa-gears"></i> How It Works
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#roles">
+                                    <i class="fas fa-users-gear"></i> For Teams
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Right actions -->
+                    <ul class="navbar-nav align-items-center gap-2 ms-2">
+
+                        <!-- Theme toggle -->
+                        <li class="nav-item">
+                            <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle dark/light mode">
+                                <i class="fas fa-sun" id="themeIcon"></i>
+                            </button>
+                        </li>
+
+                        @if (isAuthenticated)
+                        {
+                            <!-- Divider -->
+                            <li class="nav-item d-none d-lg-flex">
+                                <span class="nav-divider"></span>
+                            </li>
+
+                            <!-- Profile badge -->
+                            <li class="nav-item">
+                                <a asp-controller="Profile" asp-action="Index" class="nav-profile-badge" title="View Profile">
+                                    <span class="nav-profile-avatar" style="overflow:hidden;padding:0;">
+                                        @if (!string.IsNullOrEmpty(userImageUrl))
+                                        {
+                                            <img src="~/@userImageUrl" alt="@userName"
+                                                 style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+                                        }
+                                        else
+                                        {
+                                            @initials
+                                        }
+                                    </span>
+                                    <span class="nav-profile-info d-none d-lg-flex">
+                                        <span class="nav-profile-name">@userName</span>
+                                        <span class="nav-profile-role">
+                                            <i class="fas @roleIconClass"></i> @userRole
+                                        </span>
+                                    </span>
+                                </a>
+                            </li>
+
+
+                            <!-- Logout -->
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-nav-logout" id="logoutBtn">
+                                        <i class="fas fa-right-from-bracket"></i>
+                                        <span class="d-none d-sm-inline">Logout</span>
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <!-- Divider -->
+                            <li class="nav-item d-none d-lg-flex">
+                                <span class="nav-divider"></span>
+                            </li>
+
+                            <!-- Sign In button -->
+                            <li class="nav-item">
+                                <a class="btn-nav-signin" asp-controller="Account" asp-action="Login" id="signInBtn">
+                                    <i class="fas fa-right-to-bracket"></i> Sign In
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ══ MAIN CONTENT ════════════════════════════════════ -->
+    <div class="container-fluid px-0">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- ══ FOOTER ══════════════════════════════════════════ -->
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 &mdash; <strong style="color:#818cf8;">ClinicAI</strong> &mdash;
+            AI-powered clinical intelligence &nbsp;&middot;&nbsp;
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

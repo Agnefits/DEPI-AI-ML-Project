@@ -1,0 +1,64 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "ClinicAI - Access Denied";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    <script>
+        (function () {
+            const theme = localStorage.getItem('clinicai-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        .auth-body {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; background: var(--bg-gradient); padding: 2rem 1rem;
+        }
+        .auth-card { width: 100%; max-width: 480px; }
+        .auth-glass { padding: 3rem; border-radius: 24px; text-align: center; }
+        .auth-header {
+            margin-bottom: 2rem; padding-bottom: 1.75rem;
+            border-bottom: 1px solid var(--card-border, rgba(255,255,255,0.06));
+        }
+        .denied-icon {
+            font-size: 4rem; display: block; margin-bottom: 1rem;
+            filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.4));
+            color: #ef4444;
+        }
+        .denied-title { font-size: 2.25rem; font-weight: 800; color: #ef4444; margin-bottom: 0.5rem; letter-spacing: -1px; }
+        .denied-desc { color: var(--text-secondary); font-size: 1rem; margin-bottom: 0; line-height: 1.6; }
+        .denied-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .denied-actions .btn-glass,
+        .denied-actions .btn-glass-secondary { border-radius: 14px; padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 600; }
+    </style>
+</head>
+<body class="auth-body">
+    <div class="auth-card">
+        <div class="glass-card animate-fade-in auth-glass">
+            <!-- Header -->
+            <div class="auth-header">
+                <i class="fas fa-ban denied-icon"></i>
+                <h1 class="denied-title">Access Denied</h1>
+                <p class="denied-desc">You do not have the required administrative permissions to access this page.</p>
+            </div>
+            
+            <div class="denied-actions">
+                <a href="@Url.Action("Index", "Dashboard")" class="btn-glass">
+                    <i class="fas fa-chart-line me-1"></i> Go to Dashboard
+                </a>
+                <a href="@Url.Action("Logout", "Account")" class="btn-glass-secondary">
+                    <i class="fas fa-right-to-bracket me-1"></i> Sign in Differently
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

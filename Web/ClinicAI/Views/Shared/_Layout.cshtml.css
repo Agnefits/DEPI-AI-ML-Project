@@ -1,0 +1,32 @@
+/* ClinicAI — Layout component-scoped styles */
+
+a.navbar-brand {
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* Button primary themed */
+.btn-primary {
+    color: #fff;
+    background-color: var(--clr-primary, #6366f1);
+    border-color: var(--clr-primary-hover, #4f46e5);
+}
+
+/* Pill nav active state */
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: var(--clr-primary, #6366f1);
+    border-color: var(--clr-primary-hover, #4f46e5);
+}
+
+/* Borders */
+.border-top    { border-top:    1px solid var(--footer-border, rgba(0,0,0,.1)) !important; }
+.border-bottom { border-bottom: 1px solid var(--card-border, rgba(0,0,0,.1)) !important; }
+
+/* Accept-policy button */
+button.accept-policy {
+    font-size: 1rem;
+    line-height: inherit;
+}
+

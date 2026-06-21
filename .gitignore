@@ -1,0 +1,49 @@
+# Build output
+/Web/**/bin/
+/Web/**/obj/
+
+# Visual Studio
+/Web/.vs/
+/Web/**/*.user
+/Web/**/*.suo
+/Web/**/*.userosscache
+/Web/**/*.sln.docstates
+
+# Rider
+/Web/.idea/
+
+# VS Code
+/Web/.vscode/
+
+# ASP.NET logs
+/Web/logs/
+/Web/**/*.log
+
+# Node.js (frontend)
+/Web/**/node_modules/
+/Web/**/.next/
+/Web/**/dist/
+/Web/**/build/
+/Web/**/.cache/
+/Web/**/coverage/
+
+# Environment files
+/Web/**/.env
+/Web/**/.env.*
+
+# NuGet
+/Web/packages/
+/Web/**/*.nupkg
+
+# Publish output
+/Web/**/publish/
+/Web/**/wwwroot/lib/
+
+# Test results
+/Web/**/TestResults/
+
+# OS files
+/Web/**/.DS_Store
+/Web/**/Thumbs.db
+/Web/ClinicAI/wwwroot/uploads
+/Web/ClinicAI/.vs

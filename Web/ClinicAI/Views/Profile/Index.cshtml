@@ -1,0 +1,340 @@
+@model ClinicAI.ViewModels.User.UserFormVM
+@{
+    ViewData["Title"] = "My Profile";
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container-fluid py-4 animate-fade-in" style="max-width: 1000px; margin: 0 auto;">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="font-weight-bold" style="letter-spacing: -0.5px;">
+            <i class="fas fa-user-circle me-2" style="color:#6366f1;"></i> Account Settings
+        </h1>
+        <p class="text-muted">Manage your profile details, avatar, and security settings.</p>
+    </div>
+
+    <!-- Alert Notifications -->
+    @if (TempData["ProfileSuccess"] != null)
+    {
+        <div class="mb-4" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#a7f3d0;padding:0.85rem 1.1rem;border-radius:12px;display:flex;align-items:center;gap:0.6rem;">
+            <i class="fas fa-circle-check"></i> @TempData["ProfileSuccess"]
+        </div>
+    }
+    @if (TempData["PasswordSuccess"] != null)
+    {
+        <div class="mb-4" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#a7f3d0;padding:0.85rem 1.1rem;border-radius:12px;display:flex;align-items:center;gap:0.6rem;">
+            <i class="fas fa-lock"></i> @TempData["PasswordSuccess"]
+        </div>
+    }
+    @if (TempData["PasswordError"] != null)
+    {
+        <div class="mb-4" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;padding:0.85rem 1.1rem;border-radius:12px;display:flex;align-items:center;gap:0.6rem;">
+            <i class="fas fa-triangle-exclamation"></i> @TempData["PasswordError"]
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <!-- ── LEFT: Profile Details + Avatar ─────────────── -->
+        <div class="col-lg-7">
+            <div class="glass-card h-100">
+                <h4 class="mb-4 font-weight-bold">
+                    <i class="fas fa-id-card me-2" style="color:#6366f1;"></i> Personal Profile
+                </h4>
+
+                <form asp-action="Index" method="post" enctype="multipart/form-data" id="profileForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="Username" />
+                    <input type="hidden" asp-for="ImageUrl" />
+
+                    <!-- ── Avatar Upload Zone ─────────────── -->
+                    <div class="d-flex align-items-center mb-4" style="gap: 1.5rem;">
+
+                        <!-- Clickable avatar circle -->
+                        <div id="avatarWrapper" style="position:relative;width:88px;height:88px;flex-shrink:0;cursor:pointer;" title="Click to change photo">
+                            <div id="avatarCircle" style="width:88px;height:88px;border-radius:50%;overflow:hidden;border:2px solid rgba(99,102,241,0.4);box-shadow:0 0 18px rgba(99,102,241,0.25);transition:all 0.3s;">
+                                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                                {
+                                    <img id="avatarPreview" src="~/@Model.ImageUrl" alt="Profile"
+                                         style="width:100%;height:100%;object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div id="avatarInitials" class="w-100 h-100 d-flex align-items-center justify-content-center font-weight-bold"
+                                         style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:1.6rem;letter-spacing:-1px;">
+                                        @(Model.FullName?.Substring(0, Math.Min(2, Model.FullName?.Length ?? 0)).ToUpper() ?? "U")
+                                    </div>
+                                }
+                            </div>
+                            <!-- Hover overlay -->
+                            <div id="avatarOverlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.55);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s;pointer-events:none;">
+                                <i class="fas fa-camera" style="color:#fff;font-size:1.1rem;"></i>
+                                <span style="color:#fff;font-size:0.58rem;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Change</span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden file input triggered by clicking avatar -->
+                        <input type="file" id="imageFileInput" asp-for="ImageFile" accept="image/png,image/jpeg,image/webp,image/gif"
+                               style="display:none;" />
+
+                        <div>
+                            <h5 class="m-0 font-weight-bold mb-1">@Model.FullName</h5>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <span style="background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.2);font-size:0.78rem;padding:2px 10px;border-radius:6px;font-weight:600;">
+                                    <i class="fas fa-shield-halved me-1"></i>@ViewBag.RoleName
+                                </span>
+                                @if (ViewBag.HospitalName != "None")
+                                {
+                                    <span style="background:rgba(6,182,212,0.1);color:#67e8f9;border:1px solid rgba(6,182,212,0.2);font-size:0.78rem;padding:2px 10px;border-radius:6px;font-weight:600;">
+                                        <i class="fas fa-hospital me-1"></i>@ViewBag.HospitalName
+                                    </span>
+                                }
+                            </div>
+                            <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin:0;">
+                                <i class="fas fa-camera me-1"></i>Click avatar to change • JPG, PNG, WebP up to 5 MB
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- File name display -->
+                    <div id="fileNameBadge" style="display:none;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:0.5rem 0.9rem;margin-bottom:1rem;font-size:0.82rem;color:#a5b4fc;align-items:center;gap:0.5rem;">
+                        <i class="fas fa-image"></i>
+                        <span id="fileNameText">No file selected</span>
+                        <button type="button" id="clearFile" style="background:none;border:none;color:#ef4444;margin-left:auto;cursor:pointer;padding:0;font-size:0.85rem;">
+                            <i class="fas fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Form fields -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label asp-for="FullName" class="glass-label">Full Name</label>
+                            <input asp-for="FullName" class="glass-input" required />
+                            <span asp-validation-for="FullName" class="text-danger" style="font-size:0.8rem;"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="glass-label">Email Address</label>
+                            <input asp-for="Email" type="email" class="glass-input" required />
+                            <span asp-validation-for="Email" class="text-danger" style="font-size:0.8rem;"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="glass-label">Phone Number</label>
+                            <input asp-for="Phone" class="glass-input" placeholder="e.g. +20 100 000 0000" />
+                            <span asp-validation-for="Phone" class="text-danger" style="font-size:0.8rem;"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Specialization" class="glass-label">Specialization</label>
+                        <input asp-for="Specialization" class="glass-input" placeholder="e.g. Thoracic Imaging, Pulmonary Care" />
+                        <span asp-validation-for="Specialization" class="text-danger" style="font-size:0.8rem;"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn-glass" style="gap:0.5rem;">
+                            <i class="fas fa-floppy-disk"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── RIGHT: Change Password ─────────────────────── -->
+        <div class="col-lg-5">
+            <div class="glass-card mb-4">
+                <h4 class="mb-4 font-weight-bold">
+                    <i class="fas fa-lock me-2" style="color:#6366f1;"></i> Change Password
+                </h4>
+                <form asp-action="ChangePassword" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="oldPassword" class="glass-label">Current Password</label>
+                        <div style="position:relative;">
+                            <input type="password" id="oldPassword" name="oldPassword" class="glass-input" required
+                                   style="padding-right:2.5rem;" autocomplete="current-password" />
+                            <button type="button" class="pwd-eye" data-target="oldPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newPassword" class="glass-label">New Password</label>
+                        <div style="position:relative;">
+                            <input type="password" id="newPassword" name="newPassword" class="glass-input"
+                                   placeholder="Min. 6 characters" required style="padding-right:2.5rem;"
+                                   autocomplete="new-password" />
+                            <button type="button" class="pwd-eye" data-target="newPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <!-- Password strength bar -->
+                        <div id="strengthBar" style="height:3px;border-radius:2px;margin-top:6px;background:rgba(255,255,255,0.08);overflow:hidden;">
+                            <div id="strengthFill" style="height:100%;width:0;transition:width 0.4s,background 0.4s;border-radius:2px;"></div>
+                        </div>
+                        <div id="strengthLabel" style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:3px;"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirmPassword" class="glass-label">Confirm New Password</label>
+                        <div style="position:relative;">
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="glass-input"
+                                   required style="padding-right:2.5rem;" autocomplete="new-password" />
+                            <button type="button" class="pwd-eye" data-target="confirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="matchHint" style="font-size:0.72rem;margin-top:4px;"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn-glass" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);box-shadow:none;">
+                            <i class="fas fa-key"></i> Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Eye toggle button inside password fields */
+    .pwd-eye {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.35);
+        cursor: pointer;
+        padding: 0;
+        font-size: 0.85rem;
+        transition: color 0.2s;
+        z-index: 2;
+    }
+    .pwd-eye:hover { color: rgba(255,255,255,0.7); }
+</style>
+
+@section Scripts {
+<script>
+(function () {
+    /* ── Avatar click-to-upload ─────────────────────── */
+    const wrapper  = document.getElementById('avatarWrapper');
+    const overlay  = document.getElementById('avatarOverlay');
+    const fileInput = document.getElementById('imageFileInput');
+    const badge    = document.getElementById('fileNameBadge');
+    const nameText = document.getElementById('fileNameText');
+    const clearBtn = document.getElementById('clearFile');
+
+    if (wrapper && fileInput) {
+        wrapper.addEventListener('mouseenter', () => overlay.style.opacity = '1');
+        wrapper.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+        wrapper.addEventListener('click',      () => fileInput.click());
+
+        fileInput.addEventListener('change', function () {
+            if (!this.files || !this.files[0]) return;
+            const file = this.files[0];
+
+            // Size guard: 5 MB
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image must be under 5 MB.');
+                this.value = '';
+                return;
+            }
+
+            // Live preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const circle = document.getElementById('avatarCircle');
+                circle.innerHTML = '<img id="avatarPreview" src="' + e.target.result + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;">';
+            };
+            reader.readAsDataURL(file);
+
+            // Show badge
+            nameText.textContent = file.name;
+            badge.style.display = 'flex';
+        });
+
+        clearBtn.addEventListener('click', function () {
+            fileInput.value = '';
+            badge.style.display = 'none';
+            // Restore original avatar
+            const initials = '@(Model.FullName?.Substring(0, Math.Min(2, Model.FullName?.Length ?? 0)).ToUpper() ?? "U")';
+            const imgUrl   = '@Model.ImageUrl';
+            const circle   = document.getElementById('avatarCircle');
+            if (imgUrl) {
+                circle.innerHTML = '<img src="/' + imgUrl + '" alt="Profile" style="width:100%;height:100%;object-fit:cover;">';
+            } else {
+                circle.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:1.6rem;font-weight:800;">' + initials + '</div>';
+            }
+        });
+    }
+
+    /* ── Password strength meter ───────────────────── */
+    const newPwd   = document.getElementById('newPassword');
+    const fill     = document.getElementById('strengthFill');
+    const lbl      = document.getElementById('strengthLabel');
+    const confPwd  = document.getElementById('confirmPassword');
+    const matchHint = document.getElementById('matchHint');
+
+    if (newPwd && fill) {
+        newPwd.addEventListener('input', function () {
+            const v = this.value;
+            let score = 0;
+            if (v.length >= 6)  score++;
+            if (v.length >= 10) score++;
+            if (/[A-Z]/.test(v)) score++;
+            if (/[0-9]/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+
+            const pct   = ['0%','20%','40%','65%','85%','100%'][score];
+            const color = ['#ef4444','#f59e0b','#f59e0b','#6366f1','#10b981','#10b981'][score];
+            const text  = ['','Weak','Fair','Good','Strong','Very Strong'][score];
+            fill.style.width = pct;
+            fill.style.background = color;
+            lbl.textContent = text;
+            lbl.style.color = color;
+            checkMatch();
+        });
+    }
+
+    function checkMatch() {
+        if (!confPwd || !newPwd || !matchHint) return;
+        if (!confPwd.value) { matchHint.textContent = ''; return; }
+        if (confPwd.value === newPwd.value) {
+            matchHint.textContent = '✓ Passwords match';
+            matchHint.style.color = '#10b981';
+        } else {
+            matchHint.textContent = '✗ Passwords do not match';
+            matchHint.style.color = '#ef4444';
+        }
+    }
+    if (confPwd) confPwd.addEventListener('input', checkMatch);
+
+    /* ── Password eye toggles ──────────────────────── */
+    document.querySelectorAll('.pwd-eye').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon  = this.querySelector('i');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    });
+})();
+</script>
+}

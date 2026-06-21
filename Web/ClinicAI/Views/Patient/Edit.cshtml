@@ -1,0 +1,135 @@
+@model ClinicAI.ViewModels.Patient.PatientVM
+@{
+    ViewData["Title"] = "Edit Patient Profile";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="container py-4 animate-fade-in" style="max-width: 800px;">
+    <!-- Back Link -->
+    <div class="mb-3">
+        <a href="@Url.Action("Index")" class="text-muted text-decoration-none">← Back to Patient Registry</a>
+    </div>
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h1 class="font-weight-bold">Edit Patient: @Model.FullName</h1>
+        <p class="text-muted">Modify contact information, blood group settings, supervising doctor, or clinical notes.</p>
+    </div>
+
+    <!-- Error Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger glass-card border-danger mb-4" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5;">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    }
+
+    <!-- Form Card -->
+    <div class="glass-card">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="MedicalRecordNumber" />
+            <input type="hidden" asp-for="CreatedAt" />
+
+            <div class="row">
+                <!-- MRN (Readonly display) -->
+                <div class="col-md-6 mb-3">
+                    <label class="glass-label">Medical Record Number (MRN)</label>
+                    <input class="glass-input text-muted" value="@Model.MedicalRecordNumber" readonly style="background: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.03);" />
+                </div>
+
+                <!-- Full Name -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="FullName" class="glass-label">Patient Full Name</label>
+                    <input asp-for="FullName" class="glass-input" required />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Gender -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Gender" class="glass-label">Gender</label>
+                    <select asp-for="Gender" class="glass-input bg-dark text-white" style="height: 48px;">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                </div>
+
+                <!-- DOB -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DOB" class="glass-label">Date of Birth</label>
+                    <input asp-for="DOB" type="date" class="glass-input" required value="@Model.DOB.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="DOB" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Phone -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Phone" class="glass-label">Phone Number</label>
+                    <input asp-for="Phone" class="glass-input" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <!-- Address -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Address" class="glass-label">Residential Address</label>
+                    <input asp-for="Address" class="glass-input" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Blood Group -->
+                <div class="col-md-4 mb-3">
+                    <label asp-for="BloodGroup" class="glass-label">Blood Group</label>
+                    <select asp-for="BloodGroup" class="glass-input bg-dark text-white" style="height: 48px;">
+                        <option value="">Unknown</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    <span asp-validation-for="BloodGroup" class="text-danger"></span>
+                </div>
+
+                <!-- Supervising Doctor -->
+                <div class="col-md-5 mb-3">
+                    <label asp-for="DoctorId" class="glass-label">Supervising Doctor</label>
+                    <select asp-for="DoctorId" asp-items="Model.DoctorsList" class="glass-input bg-dark text-white" style="height: 48px;"></select>
+                    <span asp-validation-for="DoctorId" class="text-danger"></span>
+                </div>
+
+                <!-- Archive Switch -->
+                <div class="col-md-3 mb-3 d-flex align-items-center mt-4">
+                    <div class="custom-control custom-switch">
+                        <input asp-for="IsArchived" type="checkbox" class="custom-control-input" id="isArchivedSwitch" />
+                        <label class="custom-control-label glass-label font-weight-normal" for="isArchivedSwitch">Archive Profile</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="mb-4">
+                <label asp-for="AdditionalInformation" class="glass-label">Clinical Background / Additional Information</label>
+                <textarea asp-for="AdditionalInformation" class="glass-input" rows="4" placeholder="Enter history, notes, or warning flags..."></textarea>
+                <span asp-validation-for="AdditionalInformation" class="text-danger"></span>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-3 mt-4" style="gap: 1rem;">
+                <a href="@Url.Action("Index")" class="btn-glass-secondary">Cancel</a>
+                <button type="submit" class="btn-glass"><i class="fas fa-floppy-disk"></i> Save Profile Details</button>
+            </div>
+        </form>
+    </div>
+</div>
