@@ -7,16 +7,26 @@
 
 ## Table of Contents
 
+**Part A — Clinical NLP Pipeline**
 1. [Project Overview](#1-project-overview)
 2. [System Architecture (High-Level)](#2-system-architecture-high-level)
 3. [NLP Pipeline Architecture](#3-nlp-pipeline-architecture)
-4. [Model Architecture Diagrams](#4-model-architecture-diagrams)
-5. [Data Flow](#5-data-flow)
+4. [NLP Model Architecture Diagrams](#4-nlp-model-architecture-diagrams)
+5. [NLP Data Flow](#5-nlp-data-flow)
 6. [Repository Structure](#6-repository-structure)
-7. [Phase-by-Phase Plan](#7-phase-by-phase-plan)
-8. [Evaluation Strategy](#8-evaluation-strategy)
-9. [Deployment Architecture](#9-deployment-architecture)
-10. [Team Responsibilities](#10-team-responsibilities)
+7. [NLP Phase-by-Phase Plan](#7-nlp-phase-by-phase-plan)
+
+**Part B — Medical Image Diagnosis (Chest X-ray)**
+8. [Image Diagnosis Overview](#8-image-diagnosis-overview)
+9. [Image Pipeline Architecture](#9-image-pipeline-architecture)
+10. [Image Model Architecture Diagrams](#10-image-model-architecture-diagrams)
+11. [Image Data Flow](#11-image-data-flow)
+12. [Image Phase-by-Phase Plan](#12-image-phase-by-phase-plan)
+
+**Part C — Shared Infrastructure**
+13. [Evaluation Strategy](#13-evaluation-strategy)
+14. [Deployment Architecture](#14-deployment-architecture)
+15. [Team Responsibilities](#15-team-responsibilities)
 
 ---
 
@@ -513,5 +523,490 @@ uv run python models/evaluate.py
 uvicorn models.api.main:app --reload --port 8000
 
 # Launch Gradio UI
+uv run python models/app.py
+```
+
+---
+
+---
+
+# PART B — Medical Image Diagnosis (Chest X-ray)
+
+---
+
+## 8. Image Diagnosis Overview
+
+### Problem Statement (تعريف المشكلة)
+
+Chest X-ray interpretation is **time-consuming** and **expert-dependent**. This system uses **deep learning CNNs** to automatically detect common pulmonary and cardiac abnormalities from chest X-ray images, reducing radiologist workload and surfacing critical findings faster.
+
+### What We Are Building
+
+| Sub-Task | Input | Output | Model |
+|---|---|---|---|
+| **X-ray Classification** | Chest X-ray image (JPEG/PNG) | Detected disease + confidence score | DenseNet-121 / ResNet-50 |
+| **Multi-label Detection** | Single X-ray | Multiple co-occurring diseases | Sigmoid multi-label head |
+| **Gradio UI (Image)** | Uploaded X-ray | Highlighted regions + disease list | Gradio image interface |
+| **API Endpoint** | X-ray image bytes | JSON prediction + confidence | FastAPI `/predict/xray` |
+
+### Targeted Diseases & Expected Accuracies
+
+| Disease | Arabic Name | Medical Description | Expected Accuracy | Doctor Difficulty |
+|---|---|---|---|---|
+| **Pneumonia** | الالتهاب الرئوي | Infection in the lung's air sacs | 88–94% | 80% |
+| **Pleural Effusion** | الانصباب الجنبي | Fluid accumulation around lungs | 90–95% | 85% |
+| **Atelectasis** | انخماص الرئة | Partial/complete lung collapse | 82–90% | 70% |
+| **Cardiomegaly** | تضخم القلب | Abnormal heart enlargement | 92–96% | 90% |
+| **Lung Nodule/Mass** | عقدة/كتلة رئوية | Small growth in lung tissue | 80–88% | 65% |
+| **Fibrosis** | تليف الرئة | Lung tissue scarring | 78–85% | 60% |
+| **Tuberculosis** | السل | Bacterial lung infection (TB) | 90–95% | 85% |
+
+---
+
+## 9. Image Pipeline Architecture
+
+```mermaid
+flowchart LR
+    A["🖼️ Input X-ray Image\n(JPEG / PNG / DICOM)"] --> B
+
+    subgraph PREPROCESS["🔧 Image Preprocessing"]
+        B["Load & Decode\n(PIL / OpenCV)"] --> C
+        C["Resize to 224×224\nor 256×256"] --> D
+        D["Normalize Pixel Values\n(mean=[0.485,0.456,0.406]\nstd=[0.229,0.224,0.225])"] --> E
+        E["Convert to Tensor\n(3 × H × W)"]
+    end
+
+    E --> F
+
+    subgraph AUGMENT["🔀 Data Augmentation (Train only)"]
+        F["Random Horizontal Flip"] --> G
+        G["Random Rotation ±10°"] --> H
+        H["Random Brightness\n& Contrast Jitter"] --> I
+        I["Augmented Tensor\n(3 × 224 × 224)"]
+    end
+
+    I --> J
+
+    subgraph MODEL["🧠 CNN Model Inference"]
+        J["Pre-trained Backbone\n(DenseNet-121 or ResNet-50)\nImageNet weights → fine-tuned"] --> K
+        K["Feature Maps\n(batch × 1024 channels)"] --> L
+        L["Global Average Pooling\n→ 1024-dim feature vector"] --> M
+        M["Dropout (p=0.5)"] --> N
+        N["Fully Connected Layer\n(1024 → num_classes)"] --> O
+        O["Sigmoid Activation\n(multi-label output)"]
+    end
+
+    O --> P["🏷️ Predictions JSON\n{Pneumonia: 0.87,\nCardiomegaly: 0.12,\nAtelectasis: 0.54}"]
+```
+
+---
+
+## 10. Image Model Architecture Diagrams
+
+### 10A. DenseNet-121 Fine-Tuned Architecture (Primary)
+
+```mermaid
+graph TD
+    A["Input X-ray\n224 × 224 × 3"] --> B
+    B["DenseNet-121 Backbone\nPre-trained on ImageNet\n121 layers, dense connections"] --> C
+    C["Dense Block 1\n(6 layers, 32 growth rate)"] --> D
+    D["Transition Layer 1\n(Conv + AvgPool → /2)"] --> E
+    E["Dense Block 2\n(12 layers)"] --> F
+    F["Transition Layer 2\n(Conv + AvgPool → /2)"] --> G
+    G["Dense Block 3\n(24 layers)"] --> H
+    H["Dense Block 4\n(16 layers)\n→ 1024 feature maps"] --> I
+    I["Global Average Pooling\n→ 1024-dim vector"] --> J
+    J["Dropout (p=0.5)"] --> K
+    K["Linear (1024 → 7)\n(one per disease)"] --> L
+    L["Sigmoid\n(independent per class)"] --> M
+    M["Multi-label Output\nP(Pneumonia), P(Effusion),\nP(Atelectasis), ..."]
+```
+
+### 10B. ResNet-50 Alternative Architecture
+
+```mermaid
+graph TD
+    A["Input X-ray\n224 × 224 × 3"] --> B
+    B["Conv1 7×7, stride 2\n→ MaxPool 3×3, stride 2"] --> C
+    C["ResNet Layer 1\n3 Bottleneck Blocks\n(64 → 256 channels)"] --> D
+    D["ResNet Layer 2\n4 Bottleneck Blocks\n(128 → 512 channels)"] --> E
+    E["ResNet Layer 3\n6 Bottleneck Blocks\n(256 → 1024 channels)"] --> F
+    F["ResNet Layer 4\n3 Bottleneck Blocks\n(512 → 2048 channels)"] --> G
+    G["Global Avg Pooling\n→ 2048-dim vector"] --> H
+    H["Dropout (p=0.5)\n→ Linear (2048 → 7)"] --> I
+    I["Sigmoid Multi-label Output"]
+```
+
+### 10C. Model Comparison Plan
+
+```mermaid
+graph LR
+    subgraph ModelA["DenseNet-121 (Primary)"]
+        DA["ImageNet pre-trained\n→ Fine-tune all layers\nLR: 1e-4, epochs: 20"] --> DA2["Target AUC: 0.85+"]
+    end
+
+    subgraph ModelB["ResNet-50 (Baseline)"]
+        RB["ImageNet pre-trained\n→ Fine-tune last 2 blocks\nLR: 1e-3, epochs: 15"] --> RB2["Target AUC: 0.80+"]
+    end
+
+    DA2 --> C["📊 Compare AUC-ROC\nper disease class\nReport best model"]
+    RB2 --> C
+```
+
+### 10D. Transfer Learning Strategy
+
+```mermaid
+graph LR
+    A["ImageNet Weights\n(1.2M images, 1000 classes)"] --> B
+    B["Freeze backbone\nTrain head only\n(Epochs 1-5)"] --> C
+    C["Unfreeze last 2 blocks\nFine-tune\n(Epochs 6-15)"] --> D
+    D["Unfreeze all layers\nFull fine-tune\n(Epochs 16-20, LR ×0.1)"] --> E
+    E["Best checkpoint\n(highest validation AUC)"]
+```
+
+---
+
+## 11. Image Data Flow
+
+```mermaid
+sequenceDiagram
+    participant Doc as Doctor / User
+    participant UI as Gradio UI / Web App
+    participant API as FastAPI :8000
+    participant Model as CNN Model
+    participant DB as ClinicAI DB
+
+    Doc->>UI: Upload Chest X-ray image
+    UI->>API: POST /predict/xray (multipart image)
+    API->>API: Decode & preprocess image
+    API->>Model: tensor = preprocess(image)
+    Model->>Model: densenet(tensor) → sigmoid
+    Model-->>API: {disease: confidence, ...}
+    API-->>UI: JSON predictions
+
+    UI-->>Doc: Display disease list\nwith confidence bars
+
+    Doc->>UI: Accept/Edit diagnosis
+    UI->>API: POST /cases/{id}/ai-result
+    API->>DB: Store prediction + doctor review
+    DB-->>API: Case saved
+    API-->>UI: Confirmation
+```
+
+---
+
+## 12. Image Phase-by-Phase Plan
+
+### 🔲 Image Phase 1 — Dataset Collection
+
+**Datasets to use:**
+
+| Dataset | Size | Classes | Access |
+|---|---|---|---|
+| **NIH ChestX-ray14** | 112,120 images | 14 disease labels | Public (NIH) |
+| **CheXpert** | 224,316 images | 14 labels + uncertainty | Public (Stanford) |
+| **RSNA Pneumonia** | 30,000 images | Pneumonia only | Public (Kaggle) |
+| **Montgomery/Shenzhen** | ~800 images | TB detection | Public (NIH) |
+
+| Step | Action | File |
+|---|---|---|
+| I-1.1 | Download NIH ChestX-ray14 dataset | `models/image/data/download_chestxray.py` |
+| I-1.2 | Split into train/val/test (70/15/15) | `models/image/data/split_dataset.py` |
+| I-1.3 | EDA: class distribution, image quality | `models/image/data/explore_images.ipynb` |
+| I-1.4 | Handle class imbalance (compute pos_weight) | `models/image/data/explore_images.ipynb` |
+
+---
+
+### 🔲 Image Phase 2 — Preprocessing & Augmentation
+
+| Step | Action | File |
+|---|---|---|
+| I-2.1 | Resize all images to 224×224 | `models/image/src/preprocess.py` |
+| I-2.2 | Normalize with ImageNet mean/std | `models/image/src/preprocess.py` |
+| I-2.3 | Apply train augmentation (flip, rotate, jitter) | `models/image/src/preprocess.py` |
+| I-2.4 | Create PyTorch `Dataset` + `DataLoader` | `models/image/src/dataset.py` |
+
+---
+
+### 🔲 Image Phase 3 — Model Implementation
+
+| Step | Action | File |
+|---|---|---|
+| I-3.1 | Build DenseNet-121 with custom multi-label head | `models/image/src/model_densenet.py` |
+| I-3.2 | Build ResNet-50 baseline model | `models/image/src/model_resnet.py` |
+| I-3.3 | Implement Binary Cross-Entropy loss with pos_weight | `models/image/src/losses.py` |
+
+---
+
+### 🔲 Image Phase 4 — Training
+
+```bash
+# Train DenseNet-121 (Primary)
+uv run python models/image/train_xray.py --model densenet --epochs 20 --lr 1e-4
+
+# Train ResNet-50 (Baseline)
+uv run python models/image/train_xray.py --model resnet --epochs 15 --lr 1e-3
+```
+
+**Hyperparameters:**
+
+| Parameter | DenseNet-121 | ResNet-50 |
+|---|---|---|
+| Learning Rate | 1e-4 (fine-tune) | 1e-3 (head) / 1e-4 (full) |
+| Batch Size | 32 | 32 |
+| Optimizer | AdamW | Adam |
+| Loss | WeightedBCE | WeightedBCE |
+| Epochs | 20 | 15 |
+| Scheduler | CosineAnnealing | StepLR ×0.1 every 5 |
+
+Files: `models/image/train_xray.py`
+
+---
+
+### 🔲 Image Phase 5 — Evaluation
+
+```bash
+uv run python models/image/evaluate_xray.py --output docs/xray_evaluation_report.md
+```
+
+**Metrics per disease class:**
+
+| Metric | Purpose |
+|---|---|
+| **AUC-ROC** | Primary metric (area under ROC curve per class) |
+| **Precision @ 0.5** | Fraction of flagged cases truly positive |
+| **Recall @ 0.5** | Fraction of true cases caught |
+| **F1 @ 0.5** | Harmonic mean P+R |
+| **Mean AUC** | Single overall score across all 7 diseases |
+
+---
+
+### 🔲 Image Phase 6 — Grad-CAM Visualization
+
+Add **Grad-CAM** heatmaps so doctors can see *which region* of the X-ray triggered the prediction — critical for clinical trust.
+
+```mermaid
+graph LR
+    A["Input X-ray"] --> B["DenseNet Forward Pass"]
+    B --> C["Extract Gradient\nof target class\nw.r.t. last conv layer"]
+    C --> D["Compute Weighted\nFeature Map (Grad-CAM)"]
+    D --> E["Overlay Heatmap\non original X-ray"]
+    E --> F["🔴 Red = High Activation\n(disease region)\n🔵 Blue = Low Activation"]
+```
+
+Files: `models/image/src/gradcam.py`
+
+---
+
+### 🔲 Image Phase 7 — FastAPI Endpoint
+
+```python
+# POST /predict/xray
+# Input:  multipart/form-data image file
+# Output: {
+#   "predictions": [
+#     {"disease": "Pneumonia", "confidence": 0.87, "threshold": 0.5, "detected": true},
+#     {"disease": "Cardiomegaly", "confidence": 0.12, "threshold": 0.5, "detected": false}
+#   ],
+#   "gradcam_url": "/static/gradcam_result.png"
+# }
+```
+
+Files: `models/api/main.py` (add `/predict/xray` route)
+
+---
+
+### 🔲 Image Phase 8 — Gradio UI (Image Tab)
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│  X-ray Diagnosis Demo                                         │
+│  ──────────────────────────────────────────────────────────  │
+│  Upload X-ray:  [📁 Choose File]                             │
+│                                                               │
+│  ┌───────────────────┐  ┌────────────────────────────────┐  │
+│  │                   │  │ 🔴 Detected Conditions:         │  │
+│  │  [X-ray image     │  │  ✅ Pneumonia         87%      │  │
+│  │   with Grad-CAM   │  │  ✅ Atelectasis       54%      │  │
+│  │   heatmap overlay]│  │  ❌ Cardiomegaly      12%      │  │
+│  │                   │  │  ❌ Effusion           8%      │  │
+│  └───────────────────┘  └────────────────────────────────┘  │
+│                    [Analyze X-ray]                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+File: `models/image/app_xray.py` (combined into `models/app.py` with tabs)
+
+---
+
+### 🔲 Image Phase 9 — .NET Backend Integration
+
+```csharp
+// Web/ClinicAI/Services/AiService.cs
+public async Task<XrayResult> AnalyzeXrayAsync(IFormFile xrayFile)
+{
+    using var form = new MultipartFormDataContent();
+    form.Add(new StreamContent(xrayFile.OpenReadStream()), "file", xrayFile.FileName);
+    var response = await _httpClient.PostAsync("http://localhost:8000/predict/xray", form);
+    return await response.Content.ReadFromJsonAsync<XrayResult>();
+}
+```
+
+---
+
+### Updated Repository Structure (Full)
+
+```text
+DEPI-AI-ML-Project/
+│
+├── models/                            # 📁 All Python AI/ML code
+│   ├── clinical_nlp_workspace.py      # NLP quick demo
+│   ├── app.py                         # Combined Gradio UI (NLP + X-ray tabs)
+│   │
+│   ├── src/                           # 📁 NLP pipeline
+│   │   ├── preprocess.py
+│   │   ├── embeddings.py
+│   │   ├── models.py
+│   │   └── crf.py
+│   │
+│   ├── image/                         # 📁 X-ray image pipeline  ← NEW
+│   │   ├── train_xray.py              # X-ray model training
+│   │   ├── evaluate_xray.py           # AUC-ROC evaluation
+│   │   ├── app_xray.py                # Gradio tab for X-ray
+│   │   ├── src/
+│   │   │   ├── preprocess.py          # Image resize + normalize
+│   │   │   ├── dataset.py             # PyTorch Dataset class
+│   │   │   ├── model_densenet.py      # DenseNet-121 model
+│   │   │   ├── model_resnet.py        # ResNet-50 baseline
+│   │   │   ├── losses.py              # Weighted BCE loss
+│   │   │   └── gradcam.py             # Grad-CAM visualization
+│   │   └── data/
+│   │       ├── download_chestxray.py  # NIH dataset downloader
+│   │       ├── split_dataset.py       # Train/val/test split
+│   │       └── explore_images.ipynb   # EDA notebook
+│   │
+│   ├── api/                           # 📁 FastAPI (NLP + Image)
+│   │   ├── main.py                    # /predict/ner, /predict/icd10, /predict/xray
+│   │   └── schemas.py
+│   │
+│   └── checkpoints/                   # Saved weights
+│       ├── ner_biobert.pt
+│       ├── icd_cnn.pt
+│       └── xray_densenet.pt           # ← NEW
+```
+
+---
+
+## 13. Evaluation Strategy (Both Pipelines)
+
+```mermaid
+graph TD
+    subgraph NLP["Clinical NLP Evaluation"]
+        N1["BC5CDR Test Set\n+ MIMIC NER"] --> N2["Token-level F1\nEntity-level F1\nPrecision / Recall"]
+        N2 --> N3["Config A vs B\nΔF1 Report"]
+    end
+
+    subgraph IMG["X-ray Image Evaluation"]
+        I1["ChestX-ray14\nTest Set (15%)"] --> I2["AUC-ROC per disease\nF1 @ threshold 0.5\nConfusion Matrix"]
+        I2 --> I3["DenseNet vs ResNet\nΔAUC Report"]
+    end
+
+    N3 --> FINAL["📋 Final Combined Report\ndocs/evaluation_report.md"]
+    I3 --> FINAL
+```
+
+---
+
+## 14. Deployment Architecture (Both Pipelines)
+
+```mermaid
+graph TD
+    subgraph Clients
+        A["👤 Doctor\nWeb Browser"]
+        B["📱 Doctor\nMobile App"]
+    end
+
+    subgraph Frontend
+        C[".NET ClinicAI\nASP.NET Dashboard\nlocalhost:5000"]
+        D["Gradio Demo\nlocalhost:7860\n(NLP + X-ray tabs)"]
+    end
+
+    subgraph AIService["Python AI Microservice :8000"]
+        E["FastAPI\nmodels/api/main.py"]
+        E --> F["NLP Models\nBiLSTM-CRF\nCNN Classifier"]
+        E --> G["Image Models\nDenseNet-121\nGrad-CAM"]
+        F --> H["models/checkpoints/\nnlp weights"]
+        G --> I["models/checkpoints/\nxray_densenet.pt"]
+    end
+
+    subgraph Database
+        J["SQL Server\n(EF Core)"]
+    end
+
+    A --> C
+    B --> C
+    A --> D
+    C --> E
+    D --> E
+    C --> J
+    E --> J
+```
+
+---
+
+## 15. Team Responsibilities
+
+| Team | NLP Responsibilities | Image Responsibilities |
+|---|---|---|
+| **AI/ML (Ahmed Adel)** | NLP phases 1–8: data, models, API, Gradio | Image phases 1–8: X-ray data, CNN, Grad-CAM, API |
+| **Backend (.NET team)** | `AiService.cs` NLP integration | `AiService.cs` X-ray integration, patient case storage |
+| **Frontend / Mobile** | Show entity highlights + ICD codes | Show X-ray upload UI + disease confidence bars |
+| **All** | Documentation, final report, PR review | Documentation, final report, PR review |
+
+---
+
+## Quick Commands Reference (Full)
+
+```bash
+# ── NLP ──────────────────────────────────────────────────
+# Install dependencies
+pip install -r models/requirements.txt
+
+# Run NLP playground demo
+uv run python models/clinical_nlp_workspace.py
+
+# Download NER dataset (BC5CDR)
+uv run python models/data/download_bc5cdr.py
+
+# Train NER Config A (GloVe)
+uv run python models/train_ner.py --embedding glove --epochs 20
+
+# Train NER Config B (BioBERT)
+uv run python models/train_ner.py --embedding biobert --epochs 10
+
+# Train ICD-10 CNN classifier
+uv run python models/train_classifier.py --epochs 15
+
+# Evaluate NLP models
+uv run python models/evaluate.py --output docs/nlp_evaluation_report.md
+
+# ── X-RAY IMAGE ──────────────────────────────────────────
+# Download NIH ChestX-ray14 dataset
+uv run python models/image/data/download_chestxray.py
+
+# Train DenseNet-121 (Primary)
+uv run python models/image/train_xray.py --model densenet --epochs 20
+
+# Train ResNet-50 (Baseline)
+uv run python models/image/train_xray.py --model resnet --epochs 15
+
+# Evaluate X-ray models
+uv run python models/image/evaluate_xray.py --output docs/xray_evaluation_report.md
+
+# ── SHARED ───────────────────────────────────────────────
+# Start FastAPI service (NLP + X-ray endpoints)
+uvicorn models.api.main:app --reload --port 8000
+
+# Launch combined Gradio UI
 uv run python models/app.py
 ```
