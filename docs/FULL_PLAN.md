@@ -488,7 +488,7 @@ graph TD
 
 | Team | Responsibility |
 |---|---|
-| **AI/ML (Ahmed Adel)** | Phases 1–8: data, preprocessing, models, training, API, Gradio UI |
+| **AI/ML ** | Phases 1–8: data, preprocessing, models, training, API, Gradio UI |
 | **Backend (.NET team)** | Phase 9: `AiService.cs` integration, database, API controllers |
 | **Frontend / Mobile team** | Phase 9: display NER highlights and ICD results in dashboard |
 | **All** | Phase 10: documentation, testing, final report |
@@ -958,7 +958,7 @@ graph TD
 
 | Team | NLP Responsibilities | Image Responsibilities |
 |---|---|---|
-| **AI/ML (Ahmed Adel)** | NLP phases 1–8: data, models, API, Gradio | Image phases 1–8: X-ray data, CNN, Grad-CAM, API |
+| **AI/ML ** | NLP phases 1–8: data, models, API, Gradio | Image phases 1–8: X-ray data, CNN, Grad-CAM, API |
 | **Backend (.NET team)** | `AiService.cs` NLP integration | `AiService.cs` X-ray integration, patient case storage |
 | **Frontend / Mobile** | Show entity highlights + ICD codes | Show X-ray upload UI + disease confidence bars |
 | **All** | Documentation, final report, PR review | Documentation, final report, PR review |
