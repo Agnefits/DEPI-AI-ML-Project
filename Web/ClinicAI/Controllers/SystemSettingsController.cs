@@ -45,7 +45,10 @@ namespace ClinicAI.Controllers
                 SmtpPort = int.TryParse(list.FirstOrDefault(s => s.Group == "Email" && s.Key == "SmtpPort")?.Value, out var pt) ? pt : 587,
                 SenderEmail = list.FirstOrDefault(s => s.Group == "Email" && s.Key == "SenderEmail")?.Value ?? "",
                 SenderPassword = list.FirstOrDefault(s => s.Group == "Email" && s.Key == "SenderPassword")?.Value ?? "",
-                EnableSsl = bool.TryParse(list.FirstOrDefault(s => s.Group == "Email" && s.Key == "EnableSsl")?.Value, out var ssl) ? ssl : true
+                EnableSsl = bool.TryParse(list.FirstOrDefault(s => s.Group == "Email" && s.Key == "EnableSsl")?.Value, out var ssl) ? ssl : true,
+
+                // Mobile settings mapping
+                ApkDownloadUrl = list.FirstOrDefault(s => s.Group == "Mobile" && s.Key == "ApkDownloadUrl")?.Value ?? ""
             };
 
             return View(viewModel);
@@ -62,22 +65,25 @@ namespace ClinicAI.Controllers
                 var list = settings.ToList();
 
                 // 1. Update Storage settings
-                UpdateOrInsertSetting(list, "Storage", "MaxUploadSizeMb", model.MaxUploadSizeMb.ToString());
-                UpdateOrInsertSetting(list, "Storage", "AllowedExtensions", model.AllowedExtensions);
-                UpdateOrInsertSetting(list, "Storage", "StoragePath", model.StoragePath);
+                await UpdateOrInsertSettingAsync(list, "Storage", "MaxUploadSizeMb", model.MaxUploadSizeMb.ToString());
+                await UpdateOrInsertSettingAsync(list, "Storage", "AllowedExtensions", model.AllowedExtensions);
+                await UpdateOrInsertSettingAsync(list, "Storage", "StoragePath", model.StoragePath);
 
                 // 2. Update AI settings
-                UpdateOrInsertSetting(list, "AI", "ApiUrl", model.ApiUrl);
-                UpdateOrInsertSetting(list, "AI", "ApiKey", model.ApiKey);
-                UpdateOrInsertSetting(list, "AI", "ModelName", model.ModelName);
-                UpdateOrInsertSetting(list, "AI", "ConfidenceThreshold", model.ConfidenceThreshold.ToString());
+                await UpdateOrInsertSettingAsync(list, "AI", "ApiUrl", model.ApiUrl);
+                await UpdateOrInsertSettingAsync(list, "AI", "ApiKey", model.ApiKey);
+                await UpdateOrInsertSettingAsync(list, "AI", "ModelName", model.ModelName);
+                await UpdateOrInsertSettingAsync(list, "AI", "ConfidenceThreshold", model.ConfidenceThreshold.ToString());
 
                 // 3. Update Email settings
-                UpdateOrInsertSetting(list, "Email", "SmtpHost", model.SmtpHost);
-                UpdateOrInsertSetting(list, "Email", "SmtpPort", model.SmtpPort.ToString());
-                UpdateOrInsertSetting(list, "Email", "SenderEmail", model.SenderEmail);
-                UpdateOrInsertSetting(list, "Email", "SenderPassword", model.SenderPassword);
-                UpdateOrInsertSetting(list, "Email", "EnableSsl", model.EnableSsl.ToString());
+                await UpdateOrInsertSettingAsync(list, "Email", "SmtpHost", model.SmtpHost);
+                await UpdateOrInsertSettingAsync(list, "Email", "SmtpPort", model.SmtpPort.ToString());
+                await UpdateOrInsertSettingAsync(list, "Email", "SenderEmail", model.SenderEmail);
+                await UpdateOrInsertSettingAsync(list, "Email", "SenderPassword", model.SenderPassword);
+                await UpdateOrInsertSettingAsync(list, "Email", "EnableSsl", model.EnableSsl.ToString());
+
+                // 4. Update Mobile settings
+                await UpdateOrInsertSettingAsync(list, "Mobile", "ApkDownloadUrl", model.ApkDownloadUrl);
 
                 await _unitOfWork.CompleteAsync();
 
@@ -101,13 +107,23 @@ namespace ClinicAI.Controllers
             return View("Index", model);
         }
 
-        private void UpdateOrInsertSetting(List<SystemSetting> list, string group, string key, string value)
+        private async Task UpdateOrInsertSettingAsync(List<SystemSetting> list, string group, string key, string value)
         {
             var setting = list.FirstOrDefault(s => s.Group == group && s.Key == key);
             if (setting != null)
             {
-                setting.Value = value;
+                setting.Value = value ?? "";
                 _unitOfWork.SystemSettings.Update(setting);
+            }
+            else
+            {
+                var newSetting = new SystemSetting
+                {
+                    Group = group,
+                    Key = key,
+                    Value = value ?? ""
+                };
+                await _unitOfWork.SystemSettings.AddAsync(newSetting);
             }
         }
     }

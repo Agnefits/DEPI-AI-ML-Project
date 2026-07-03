@@ -35,9 +35,18 @@
                 </p>
 
                 <div class="hero-actions">
-                    <a asp-controller="Account" asp-action="Login" class="btn-hero-primary" id="heroGetStarted">
-                        <i class="fas fa-rocket"></i> Get Started
-                    </a>
+                    @if (!string.IsNullOrEmpty(ViewBag.ApkDownloadUrl))
+                    {
+                        <a href="@ViewBag.ApkDownloadUrl" class="btn-hero-primary" id="heroGetStarted" download>
+                            <i class="fas fa-download"></i> Download App (APK)
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn-hero-primary" id="heroGetStarted">
+                            <i class="fas fa-rocket"></i> Get Started
+                        </a>
+                    }
                     <a asp-controller="Dashboard" asp-action="Index" class="btn-hero-secondary" id="heroViewDemo">
                         <i class="fas fa-chart-bar"></i> View Dashboard
                     </a>
@@ -433,9 +442,18 @@
             <h2>Start Diagnosing Smarter<br>with <span class="gradient-text">ClinicAI</span></h2>
             <p>Join over 120 hospitals already using AI-powered diagnostics<br>to deliver faster, more accurate patient care.</p>
             <div class="d-flex gap-3 justify-content-center flex-wrap">
-                <a asp-controller="Account" asp-action="Login" class="btn-hero-primary" id="ctaGetStarted">
-                    <i class="fas fa-rocket"></i> Get Started Free
-                </a>
+                @if (!string.IsNullOrEmpty(ViewBag.ApkDownloadUrl))
+                {
+                    <a href="@ViewBag.ApkDownloadUrl" class="btn-hero-primary" id="ctaGetStarted" download>
+                        <i class="fas fa-download"></i> Download App (APK)
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn-hero-primary" id="ctaGetStarted">
+                        <i class="fas fa-rocket"></i> Get Started Free
+                    </a>
+                }
                 <a asp-controller="Dashboard" asp-action="Index" class="btn-hero-secondary" id="ctaDashboard">
                     <i class="fas fa-chart-bar"></i> Explore Dashboard
                 </a>

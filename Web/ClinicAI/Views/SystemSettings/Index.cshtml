@@ -125,6 +125,16 @@
             </div>
         </div>
 
+        <!-- 4. Mobile App Configuration Card -->
+        <div class="glass-card mb-4">
+            <h4 class="mb-4 font-weight-bold" style="color: #a78bfa;"><i class="fas fa-mobile-alt text-violet me-2"></i> Mobile Application Config</h4>
+            <div>
+                <label asp-for="ApkDownloadUrl" class="glass-label">APK Download Link</label>
+                <input asp-for="ApkDownloadUrl" type="url" class="glass-input" placeholder="e.g., https://example.com/downloads/clinicai.apk" />
+                <span asp-validation-for="ApkDownloadUrl" class="text-danger"></span>
+            </div>
+        </div>
+
         <!-- Submit Actions -->
         <div class="d-flex justify-content-end mb-5">
             <button type="submit" class="btn-glass" style="padding: 0.85rem 2rem;"><i class="fas fa-floppy-disk"></i> Save System Settings</button>

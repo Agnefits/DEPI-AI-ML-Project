@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -158,33 +160,95 @@ namespace ClinicAI.APIControllers
                 
                 string predictionLabel = "Normal";
                 double confidence = 0.92;
-                string rawAiResponse = "Infiltration detected in right lobe: Negative. Normal chest scan.";
+                string rawAiResponse = "{\"detected_labels\":[\"No Finding\"]}";
+
+                Dictionary<string, double>? probabilities = null;
+                Dictionary<string, int>? predictions = null;
+                string[]? detectedLabels = null;
 
                 try
                 {
                     // Query the AI model Python endpoint configured in database
                     rawAiResponse = await _aiService.AnalyzePromptAsync("Classify chest X-Ray scan image. Return label and confidence.", file);
                     
-                    // Simple parsing or default fallback
-                    if (rawAiResponse.Contains("Pneumonia", StringComparison.OrdinalIgnoreCase))
+                    using (var doc = JsonDocument.Parse(rawAiResponse))
                     {
-                        predictionLabel = "Pneumonia";
-                        confidence = 0.89;
-                    }
-                    else if (rawAiResponse.Contains("COVID-19", StringComparison.OrdinalIgnoreCase))
-                    {
-                        predictionLabel = "COVID-19";
-                        confidence = 0.95;
-                    }
-                    else if (rawAiResponse.Contains("Tuberculosis", StringComparison.OrdinalIgnoreCase))
-                    {
-                        predictionLabel = "Tuberculosis";
-                        confidence = 0.91;
+                        var root = doc.RootElement;
+                        
+                        // Parse detected_labels
+                        if (root.TryGetProperty("detected_labels", out var detectedLabelsProp) && detectedLabelsProp.ValueKind == JsonValueKind.Array)
+                        {
+                            var labelsList = new List<string>();
+                            foreach (var item in detectedLabelsProp.EnumerateArray())
+                            {
+                                labelsList.Add(item.GetString() ?? "");
+                            }
+                            labelsList.RemoveAll(string.IsNullOrEmpty);
+                            
+                            if (labelsList.Count > 0)
+                            {
+                                detectedLabels = labelsList.ToArray();
+                                predictionLabel = string.Join(", ", detectedLabels);
+                            }
+                            else
+                            {
+                                detectedLabels = new[] { "No Finding" };
+                                predictionLabel = "Normal";
+                            }
+                        }
+                        
+                        // Parse probabilities & predictions dictionaries
+                        if (root.TryGetProperty("probabilities", out var probabilitiesProp) && probabilitiesProp.ValueKind == JsonValueKind.Object)
+                        {
+                            probabilities = JsonSerializer.Deserialize<Dictionary<string, double>>(probabilitiesProp.GetRawText());
+                        }
+                        if (root.TryGetProperty("predictions", out var predictionsProp) && predictionsProp.ValueKind == JsonValueKind.Object)
+                        {
+                            predictions = JsonSerializer.Deserialize<Dictionary<string, int>>(predictionsProp.GetRawText());
+                        }
+
+                        // Extract confidence (max probability of detected labels)
+                        if (probabilities != null)
+                        {
+                            double maxProb = 0;
+                            bool foundProb = false;
+                            
+                            if (detectedLabels != null)
+                            {
+                                foreach (var label in detectedLabels)
+                                {
+                                    if (probabilities.TryGetValue(label, out double val))
+                                    {
+                                        if (val > maxProb)
+                                        {
+                                            maxProb = val;
+                                            foundProb = true;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (!foundProb)
+                            {
+                                foreach (var kvp in probabilities)
+                                {
+                                    if (kvp.Value > maxProb)
+                                    {
+                                        maxProb = kvp.Value;
+                                    }
+                                }
+                            }
+                            
+                            if (maxProb > 0)
+                            {
+                                confidence = maxProb;
+                            }
+                        }
                     }
                 }
                 catch
                 {
-                    // Fall back to simulated local classification model if external API is offline
+                    // Fall back to simulated local classification model if external API is offline or parse fails
                 }
 
                 var endTime = DateTime.UtcNow;
@@ -211,12 +275,27 @@ namespace ClinicAI.APIControllers
                 };
                 await _unitOfWork.AIFindings.AddAsync(aiFinding);
 
+                // Map ICD-10 Code based on keywords in predictionLabel
+                string icdCode = "Z00.0"; // Default: Normal/General exam
+                if (predictionLabel.Contains("Pneumonia", StringComparison.OrdinalIgnoreCase))
+                    icdCode = "J18.9";
+                else if (predictionLabel.Contains("COVID-19", StringComparison.OrdinalIgnoreCase))
+                    icdCode = "U07.1";
+                else if (predictionLabel.Contains("Cardiomegaly", StringComparison.OrdinalIgnoreCase))
+                    icdCode = "I51.7";
+                else if (predictionLabel.Contains("Effusion", StringComparison.OrdinalIgnoreCase))
+                    icdCode = "J91.8";
+                else if (predictionLabel.Contains("Infiltration", StringComparison.OrdinalIgnoreCase))
+                    icdCode = "R91.8";
+                else if (predictionLabel.Contains("Pneumothorax", StringComparison.OrdinalIgnoreCase))
+                    icdCode = "J93.9";
+
                 // Pre-create a draft diagnosis for doctor review
                 var diagnosis = new Diagnosis
                 {
                     CaseId = caseId,
                     DiagnosisName = predictionLabel,
-                    ICD10Code = predictionLabel == "Pneumonia" ? "J18.9" : predictionLabel == "COVID-19" ? "U07.1" : "Z00.0",
+                    ICD10Code = icdCode,
                     Confidence = confidence,
                     IsFinal = false
                 };
@@ -228,6 +307,9 @@ namespace ClinicAI.APIControllers
                     analysisId = aiAnalysis.Id,
                     label = predictionLabel,
                     confidence = confidence,
+                    detectedLabels = detectedLabels ?? (predictionLabel == "Normal" ? new string[] { "No Finding" } : predictionLabel.Split(", ")),
+                    probabilities = probabilities,
+                    predictions = predictions,
                     details = rawAiResponse,
                     processingTime = processingTime
                 });

@@ -19,5 +19,8 @@ namespace ClinicAI.ViewModels.SystemSettings
         public string SenderEmail { get; set; } = string.Empty;
         public string SenderPassword { get; set; } = string.Empty;
         public bool EnableSsl { get; set; }
+
+        // Mobile Application Settings
+        public string ApkDownloadUrl { get; set; } = string.Empty;
     }
 }
