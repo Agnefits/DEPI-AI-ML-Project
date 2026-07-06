@@ -65,9 +65,12 @@ namespace ClinicAI.Data
                     new SystemSetting { Group = "Storage", Key = "StoragePath", Value = "wwwroot/uploads/" },
 
                     // AI Configuration Settings
-                    new SystemSetting { Group = "AI", Key = "ApiUrl", Value = "https://api.gemini-model.example/v1/chat/completions" },
-                    new SystemSetting { Group = "AI", Key = "ApiKey", Value = "gemini-api-key-goes-here" },
-                    new SystemSetting { Group = "AI", Key = "ModelName", Value = "clinicMODELv0" },
+                    new SystemSetting { Group = "AI", Key = "ClassifyApiUrl", Value = "http://localhost:8000/classify" },
+                    new SystemSetting { Group = "AI", Key = "ClassifyApiKey", Value = "classify-api-key-goes-here" },
+                    new SystemSetting { Group = "AI", Key = "ClassifyModelName", Value = "clinicMODELv1" },
+                    new SystemSetting { Group = "AI", Key = "AnalyzeApiUrl", Value = "http://localhost:8000/analyze" },
+                    new SystemSetting { Group = "AI", Key = "AnalyzeApiKey", Value = "analyze-api-key-goes-here" },
+                    new SystemSetting { Group = "AI", Key = "AnalyzeModelName", Value = "clinicMODELv0" },
                     new SystemSetting { Group = "AI", Key = "ConfidenceThreshold", Value = "0.70" },
 
                     // SMTP Email Settings

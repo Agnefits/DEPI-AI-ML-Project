@@ -159,8 +159,8 @@ namespace ClinicAI.APIControllers
                 var startTime = DateTime.UtcNow;
                 
                 string predictionLabel = "Normal";
-                double confidence = 0.92;
-                string rawAiResponse = "{\"detected_labels\":[\"No Finding\"]}";
+                double confidence = 0.86;
+                string rawAiResponse = "{\"detected_labels\":[]}";
 
                 Dictionary<string, double>? probabilities = null;
                 Dictionary<string, int>? predictions = null;
@@ -169,7 +169,7 @@ namespace ClinicAI.APIControllers
                 try
                 {
                     // Query the AI model Python endpoint configured in database
-                    rawAiResponse = await _aiService.AnalyzePromptAsync("Classify chest X-Ray scan image. Return label and confidence.", file);
+                    rawAiResponse = await _aiService.ClassifyScanAsync(file);
                     
                     using (var doc = JsonDocument.Parse(rawAiResponse))
                     {
@@ -179,21 +179,61 @@ namespace ClinicAI.APIControllers
                         if (root.TryGetProperty("detected_labels", out var detectedLabelsProp) && detectedLabelsProp.ValueKind == JsonValueKind.Array)
                         {
                             var labelsList = new List<string>();
+                            var labelProbsList = new List<double>();
                             foreach (var item in detectedLabelsProp.EnumerateArray())
                             {
-                                labelsList.Add(item.GetString() ?? "");
+                                if (item.ValueKind == JsonValueKind.Object)
+                                {
+                                    string? lbl = null;
+                                    double probVal = 0.0;
+                                    if (item.TryGetProperty("label", out var labelProp))
+                                    {
+                                        lbl = labelProp.GetString();
+                                    }
+                                    if (item.TryGetProperty("probability", out var probProp) && probProp.TryGetDouble(out var pVal))
+                                    {
+                                        probVal = pVal;
+                                    }
+                                    if (!string.IsNullOrEmpty(lbl))
+                                    {
+                                        labelsList.Add(lbl);
+                                        labelProbsList.Add(probVal);
+                                    }
+                                }
+                                else if (item.ValueKind == JsonValueKind.String)
+                                {
+                                    var lbl = item.GetString();
+                                    if (!string.IsNullOrEmpty(lbl))
+                                    {
+                                        labelsList.Add(lbl);
+                                    }
+                                }
                             }
+                            
                             labelsList.RemoveAll(string.IsNullOrEmpty);
                             
                             if (labelsList.Count > 0)
                             {
                                 detectedLabels = labelsList.ToArray();
                                 predictionLabel = string.Join(", ", detectedLabels);
+                                
+                                if (labelProbsList.Count > 0)
+                                {
+                                    confidence = 0.0;
+                                    foreach (var p in labelProbsList)
+                                    {
+                                        if (p > confidence)
+                                        {
+                                            confidence = p;
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
                                 detectedLabels = new[] { "No Finding" };
                                 predictionLabel = "Normal";
+                                confidence = 0.99;
                             }
                         }
                         

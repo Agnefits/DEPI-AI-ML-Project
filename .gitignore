@@ -47,3 +47,4 @@
 /Web/**/Thumbs.db
 /Web/ClinicAI/wwwroot/uploads
 /Web/ClinicAI/.vs
+ClinicAI Model APIs/checkpoint/best_model.pth

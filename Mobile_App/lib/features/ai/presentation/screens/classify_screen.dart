@@ -5,6 +5,8 @@ import '../../../../injection/injection_container.dart' as di;
 import '../../data/datasources/ai_remote_data_source.dart';
 import '../../../cases/data/datasources/cases_remote_data_source.dart';
 import '../../../cases/data/models/case_model.dart';
+import '../../data/models/classification_result_model.dart';
+import 'classify_report_screen.dart';
 
 class ClassifyScreen extends StatefulWidget {
   const ClassifyScreen({super.key});
@@ -72,13 +74,22 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final result = await _dataSource.classify(
+      final ClassificationResultModel result = await _dataSource.classify(
         int.parse(_selectedCase!.id),
         _selectedFilePath!,
       );
       if (mounted) {
         setState(() => _isSubmitting = false);
-        _showDialog('Success', result, navigateBack: true);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ClassifyReportScreen(
+              result: result,
+              caseModel: _selectedCase!,
+              imagePath: _selectedFilePath!,
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

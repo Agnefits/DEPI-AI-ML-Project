@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from api_security import get_api_key
-# from model_loader import ai_manager
+from Model_loader import ai_manager
 
 app = FastAPI(title="ClinicAI Pro API", version="2.1")
 
@@ -40,10 +40,9 @@ async def predict_xray(
         image_bytes = await file.read()
         
         # 3. إرسال الصورة للموديل
-        # result = ai_manager.predict_from_bytes(image_bytes)
-        
-        # بيانات وهمية للتوضيح (يتم استبدالها بالسطر السابق)
-        result = {"status": "Success", "detected_labels": ["Cardiomegaly"], "client": client_data["user"]}
+        result = ai_manager.predict_from_bytes(image_bytes)
+        result["status"] = "Success"
+        result["client"] = client_data["user"]
         
         return result
         

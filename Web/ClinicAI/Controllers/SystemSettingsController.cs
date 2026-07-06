@@ -35,9 +35,26 @@ namespace ClinicAI.Controllers
                 StoragePath = list.FirstOrDefault(s => s.Group == "Storage" && s.Key == "StoragePath")?.Value ?? "wwwroot/uploads/",
 
                 // AI settings mapping
-                ApiUrl = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ApiUrl")?.Value ?? "",
-                ApiKey = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ApiKey")?.Value ?? "",
-                ModelName = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ModelName")?.Value ?? "gemini-1.5-pro",
+                ClassifyApiUrl = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ClassifyApiUrl")?.Value 
+                    ?? list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ApiUrl")?.Value 
+                    ?? "",
+                ClassifyApiKey = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ClassifyApiKey")?.Value 
+                    ?? list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ApiKey")?.Value 
+                    ?? "",
+                ClassifyModelName = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ClassifyModelName")?.Value 
+                    ?? list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ModelName")?.Value 
+                    ?? "clinicMODELv1",
+
+                AnalyzeApiUrl = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "AnalyzeApiUrl")?.Value 
+                    ?? list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ApiUrl")?.Value 
+                    ?? "",
+                AnalyzeApiKey = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "AnalyzeApiKey")?.Value 
+                    ?? list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ApiKey")?.Value 
+                    ?? "",
+                AnalyzeModelName = list.FirstOrDefault(s => s.Group == "AI" && s.Key == "AnalyzeModelName")?.Value 
+                    ?? list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ModelName")?.Value 
+                    ?? "clinicMODELv0",
+
                 ConfidenceThreshold = double.TryParse(list.FirstOrDefault(s => s.Group == "AI" && s.Key == "ConfidenceThreshold")?.Value, out var th) ? th : 0.70,
 
                 // SMTP settings mapping
@@ -70,9 +87,12 @@ namespace ClinicAI.Controllers
                 await UpdateOrInsertSettingAsync(list, "Storage", "StoragePath", model.StoragePath);
 
                 // 2. Update AI settings
-                await UpdateOrInsertSettingAsync(list, "AI", "ApiUrl", model.ApiUrl);
-                await UpdateOrInsertSettingAsync(list, "AI", "ApiKey", model.ApiKey);
-                await UpdateOrInsertSettingAsync(list, "AI", "ModelName", model.ModelName);
+                await UpdateOrInsertSettingAsync(list, "AI", "ClassifyApiUrl", model.ClassifyApiUrl);
+                await UpdateOrInsertSettingAsync(list, "AI", "ClassifyApiKey", model.ClassifyApiKey);
+                await UpdateOrInsertSettingAsync(list, "AI", "ClassifyModelName", model.ClassifyModelName);
+                await UpdateOrInsertSettingAsync(list, "AI", "AnalyzeApiUrl", model.AnalyzeApiUrl);
+                await UpdateOrInsertSettingAsync(list, "AI", "AnalyzeApiKey", model.AnalyzeApiKey);
+                await UpdateOrInsertSettingAsync(list, "AI", "AnalyzeModelName", model.AnalyzeModelName);
                 await UpdateOrInsertSettingAsync(list, "AI", "ConfidenceThreshold", model.ConfidenceThreshold.ToString());
 
                 // 3. Update Email settings
