@@ -1,73 +1,104 @@
-# Tasks: Clinical NLP Pipeline
+# Tasks: Clinical NLP Pipeline (NLP Code Only)
 
-**Input**: Design documents from `specs/001-clinical-nlp-pipeline/`
-
-**Prerequisites**: plan.md (required), spec.md (required)
-
-**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
-
-## Phase 1: Setup (Shared Infrastructure)
-
-**Purpose**: Project initialization and basic structure
-
-- [ ] T001 Create project directory structure in `Web/src` and `Web/tests`
-- [ ] T002 Configure Python dependencies in `Web/requirements.txt`
+This file contains the comprehensive task list for building the Clinical NLP Pipeline (NER, ICD-10 Classification, and Gradio UI). All tasks are Python-focused and located within the `models/` directory.
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 1: Project Setup & Environment
+Goal: Establish the directory structure, package dependencies, and development environment.
 
-**Purpose**: Core data utilities that must be complete before any model training or inference can begin
-
-- [ ] T003 Implement note cleaning and preprocessing functions in `Web/src/preprocess.py`
-- [ ] T004 Implement test suite for preprocessing in `Web/tests/test_preprocess.py`
-
-**Checkpoint**: Foundation ready - model and pipeline implementation can begin.
-
----
-
-## Phase 3: User Story 1 - Named Entity Recognition (Priority: P1) 🎯 MVP
-
-**Goal**: Extract clinical entities (diseases, drugs, symptoms, lab values) from text notes.
-
-**Independent Test**: Assert that the extraction head tags correct token sequences for diseases/drugs on clinical notes.
-
-- [ ] T005 [P] [US1] Create BioBERT and static embedding loaders in `Web/src/embeddings.py`
-- [ ] T006 [US1] Implement BiLSTM-CRF model for NER tagging in `Web/src/models.py`
-- [ ] T007 [P] [US1] Implement unit/contract tests for NER models in `Web/tests/test_models.py`
-
-**Checkpoint**: NER model is fully functional and testable independently.
+- [ ] T001 Initialize the project structure and directories
+  - [ ] Create `models/data/` for dataset storage
+  - [ ] Create `models/src/` for source modules
+  - [ ] Create `models/api/` for FastAPI implementation
+  - [ ] Create `models/checkpoints/` for saving model weights
+  - [ ] Create `models/tests/` for unit tests
+- [ ] T002 Configure Python dependencies in `models/requirements.txt`
+  - [ ] Specify PyTorch, Transformers, NLTK, Gensim, Gradio, FastAPI, Uvicorn, Pydantic, and PyTest
+  - [ ] Verify installation using `uv pip install -r models/requirements.txt`
 
 ---
 
-## Phase 4: User Story 2 - Diagnosis & ICD-10 Classification (Priority: P2)
+## Phase 2: Dataset Collection & Data Pipeline
+Goal: Download, split, and explore the clinical NLP datasets.
 
-**Goal**: Map notes to diagnosis category or specialty.
-
-**Independent Test**: Assert classification output categories on sample clinical text.
-
-- [ ] T008 [US2] Implement CNN text classifier for diagnostic prediction in `Web/src/models.py`
-- [ ] T009 [P] [US2] Implement evaluation script to output comparison report of model metrics
-
-**Checkpoint**: Both NER and Classification models are functional.
-
----
-
-## Phase 5: User Story 3 - Interactive Gradio Web App (Priority: P3)
-
-**Goal**: Allow interactive execution and comparison of models in a web UI.
-
-**Independent Test**: Access the Gradio web UI locally and submit clinical text.
-
-- [ ] T010 [US3] Implement Gradio interface launcher in `Web/app.py`
-- [ ] T011 [US3] Integrate model loading, configuration toggles, and text highlight visualization in `Web/app.py`
-
-**Checkpoint**: Complete pipeline is interactive via browser.
+- [ ] T003 [P] [US1] Create the BC5CDR NER dataset download script in `models/data/download_bc5cdr.py`
+  - [ ] Fetch chemical and disease entity annotations from BioCreative V CDR public corpus
+  - [ ] Standardize files into training, validation, and testing splits
+- [ ] T004 [P] [US1] Create the NCBI-disease NER dataset download script in `models/data/download_ncbi.py`
+  - [ ] Download public NCBI disease corpus annotations
+  - [ ] Parse into BIO (Begin-Inside-Outside) tagging format
+- [ ] T005 [P] [US2] Create dataset split script `models/data/split_dataset.py` for text classification
+  - [ ] Implement data loaders for training/validation/test sets for multi-label classification
+- [ ] T006 [P] [US1] [US2] Perform Exploratory Data Analysis in `models/data/explore_dataset.ipynb`
+  - [ ] Analyze entity frequency and label distribution (NER)
+  - [ ] Plot sequence lengths to determine maximum padding thresholds
+  - [ ] Check for label sparsity and document vocabulary coverage
 
 ---
 
-## Phase 6: Polish
+## Phase 3: Text Preprocessing & Label Alignment
+Goal: Convert raw text into tokenized sequences and align tags correctly.
 
-**Purpose**: Documentation updates
+- [ ] T007 [US1] [US2] Implement text cleaning and splitting functions in `models/src/preprocess.py`
+  - [ ] Clean special characters and whitespace, lowercase, and expand abbreviations
+  - [ ] Implement sentence splitting using `nltk.sent_tokenize`
+- [ ] T008 [US1] Implement BIO label alignment for subword tokenization in `models/src/preprocess.py`
+  - [ ] Adjust tag index alignments when mapping characters/words to BioBERT's WordPiece tokens
+- [ ] T009 [US1] [US2] Implement custom PyTorch `Dataset` and `DataLoader` in `models/src/preprocess.py`
+  - [ ] Create tensors for input IDs, attention masks, label IDs, and sequence lengths with appropriate padding
+- [ ] T010 [P] [US1] [US2] Write unit tests for preprocessing in `models/tests/test_preprocess.py`
+  - [ ] Verify cleaning rules, sentence splitting, and BIO tag alignment on sample text
 
-- [ ] T012 Update project README.md with model training and running instructions.
+---
+
+## Phase 4: Embeddings Module
+Goal: Load static and contextual word/token embedding representations.
+
+- [ ] T011 [P] [US1] [US2] Implement GloVe/Word2Vec static embedding loader in `models/src/embeddings.py` (Config A)
+  - [ ] Load pre-trained GloVe/Word2Vec weights into a PyTorch embedding layer
+  - [ ] Add out-of-vocabulary (OOV) token handling (e.g., random initialization)
+- [ ] T012 [P] [US1] Implement BioBERT contextual embedding loader in `models/src/embeddings.py` (Config B)
+  - [ ] Load `dmis-lab/biobert-v1.1` tokenizer and base model using `transformers`
+  - [ ] Create wrapper to extract the 768-dimensional token embeddings from the last hidden states
+
+---
+
+## Phase 5: CRF Layer Implementation
+Goal: Implement the Conditional Random Field layer for structured sequence labeling.
+
+- [ ] T013 [US1] Implement the CRF sequence decoding layer in `models/src/crf.py`
+  - [ ] Implement forward pass calculating the negative log-likelihood (partition function and score)
+  - [ ] Implement Viterbi decoding algorithm to find the most probable tag sequence at inference
+  - [ ] Set up the transition parameter matrix representing transition scores between BIO tags
+
+---
+
+## Phase 6: Model Architectures
+Goal: Build the neural network classes.
+
+- [ ] T014 [US1] Implement the BiLSTM-CRF architecture for NER in `models/src/models.py`
+  - [ ] Combine Embeddings (GloVe / BioBERT) with a bidirectional LSTM layer (hidden dim: 256)
+  - [ ] Implement an Attention layer over the BiLSTM hidden states
+  - [ ] Add linear projection to tags, followed by the custom CRF layer
+- [ ] T015 [US2] Implement the CNN Text Classifier for ICD-10 coding in `models/src/models.py`
+  - [ ] Set up Conv1D layers with multiple filter kernel sizes (e.g., 3, 4, 5) and 128 filters each
+  - [ ] Add global max-pooling, concatenation, dropout (p=0.5), and linear classifier layer
+
+---
+
+## Phase 7: Training Pipelines
+Goal: Build training loops with logging and checkpoints.
+
+- [ ] T016 [US1] Implement NER training script in `models/train_ner.py`
+  - [ ] Train NER model using Config A (GloVe baseline) and Config B (BioBERT primary) via CLI arguments
+  - [ ] Set up early stopping based on validation loss / validation F1 score
+  - [ ] Save best checkpoints to `models/checkpoints/` (e.g., `ner_glove.pt`, `ner_biobert.pt`)
+- [ ] T017 [US2] Implement Classifier training script in `models/train_classifier.py`
+  - [ ] Train CNN classifier for ICD-10 category mapping
+  - [ ] Save best checkpoint to `models/checkpoints/classifier_cnn.pt`
+
+---
+
+
+

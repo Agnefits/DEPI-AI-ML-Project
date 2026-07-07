@@ -47,3 +47,23 @@
 /Web/**/Thumbs.db
 /Web/ClinicAI/wwwroot/uploads
 /Web/ClinicAI/.vs
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Heavy model checkpoints and word vectors
+checkpoints/
+*.pt
+*.pth
+*.bin
+*.kv
+*.pt.tar
+
