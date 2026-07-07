@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from api_security import get_api_key
-from Model_loader import ai_manager
+from Model_loader import ai_manager, nlp_manager
 
 app = FastAPI(title="ClinicAI Pro API", version="2.1")
 
@@ -41,6 +41,30 @@ async def predict_xray(
         
         # 3. إرسال الصورة للموديل
         result = ai_manager.predict_from_bytes(image_bytes)
+        result["status"] = "Success"
+        result["client"] = client_data["user"]
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@app.post("/analyse")
+async def analyse_note(
+    model_name: str = Form("clinicai_nlp"), # السماح باختيار الموديل
+    text: str = Form(...),
+    client_data: dict = Depends(get_api_key) # خط الدفاع: التأكد من الـ API Key
+):
+    # 1. فحص هل العميل يمتلك صلاحية لاستخدام هذا الموديل؟
+    if model_name not in client_data["allowed_models"]:
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Your subscription plan '{client_data['plan']}' does not have access to model '{model_name}'."
+        )
+    
+    try:
+        # 2. إرسال النص للموديل
+        result = nlp_manager.analyze_note(text)
         result["status"] = "Success"
         result["client"] = client_data["user"]
         

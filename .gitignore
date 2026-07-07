@@ -73,3 +73,5 @@ checkpoints/biobert_tokenizer/
 "ClinicAI Model APIs/checkpoint/best_model.pth"
 
 
+/ClinicAI Model APIs/__pycache__
+/ClinicAI Model APIs/checkpoint
