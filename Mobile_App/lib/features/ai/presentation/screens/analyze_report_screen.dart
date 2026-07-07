@@ -156,7 +156,7 @@ class _AnalyzeReportScreenState extends State<AnalyzeReportScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'ICD-10 Diagnostics',
+                            'Mesh Diagnostics',
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 16,
@@ -640,12 +640,15 @@ class _AnalyzeReportScreenState extends State<AnalyzeReportScreen>
                     size: 14,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    '${ent.entity} (${ent.type})',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                  Flexible(
+                    child: Text(
+                      '${ent.entity} (${ent.type})',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
