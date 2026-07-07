@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -29,10 +30,10 @@ namespace ClinicAI.APIControllers
         }
 
         [HttpPost("analyze")]
-        public async Task<IActionResult> Analyze([FromForm] string prompt, [FromForm] int caseId, IFormFile? file)
+        public async Task<IActionResult> Analyze([FromForm] string? prompt, [FromForm] int caseId, IFormFile? file)
         {
-            if (string.IsNullOrEmpty(prompt))
-                return BadRequest("Prompt is required.");
+            if (string.IsNullOrEmpty(prompt) && (file == null || file.Length == 0))
+                return BadRequest("Either prompt or file must be provided.");
 
             // Verify the target case exists
             var targetCase = await _unitOfWork.Cases.GetByIdAsync(caseId);
@@ -77,12 +78,74 @@ namespace ClinicAI.APIControllers
                 var endTime = DateTime.UtcNow;
                 var processingTime = (endTime - startTime).TotalSeconds;
 
+                // Extract confidence and format findings if the response is JSON
+                double confidence = 0.88;
+                string findingText = aiResponse;
+
+                try
+                {
+                    using (var doc = JsonDocument.Parse(aiResponse))
+                    {
+                        var root = doc.RootElement;
+
+                        // 1. Get confidence from the highest probability diagnostic
+                        if (root.TryGetProperty("icd10_diagnostics", out var diagnosticsProp) && diagnosticsProp.ValueKind == JsonValueKind.Array)
+                        {
+                            var list = diagnosticsProp.EnumerateArray();
+                            if (list.Any())
+                            {
+                                var firstDiag = list.First();
+                                if (firstDiag.TryGetProperty("probability", out var probProp) && probProp.TryGetDouble(out var probVal))
+                                {
+                                    confidence = probVal;
+                                }
+                            }
+                        }
+
+                        // 2. Format a human-readable finding summary
+                        var textContent = root.TryGetProperty("text", out var textProp) ? textProp.GetString() : string.Empty;
+                        
+                        var entitiesList = new List<string>();
+                        if (root.TryGetProperty("entities", out var entitiesProp) && entitiesProp.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var entityObj in entitiesProp.EnumerateArray())
+                            {
+                                var entityName = entityObj.TryGetProperty("entity", out var nameProp) ? nameProp.GetString() : null;
+                                var entityType = entityObj.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : null;
+                                if (!string.IsNullOrEmpty(entityName))
+                                {
+                                    entitiesList.Add($"{entityName} ({entityType})");
+                                }
+                            }
+                        }
+
+                        var diagList = new List<string>();
+                        if (root.TryGetProperty("icd10_diagnostics", out var diagnosticsProp2) && diagnosticsProp2.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var diagObj in diagnosticsProp2.EnumerateArray())
+                            {
+                                var code = diagObj.TryGetProperty("code", out var codeProp) ? codeProp.GetString() : null;
+                                if (diagObj.TryGetProperty("probability", out var probProp2) && probProp2.TryGetDouble(out var probVal))
+                                {
+                                    diagList.Add($"{code} ({(probVal * 100):F1}%)");
+                                }
+                            }
+                        }
+
+                        findingText = $"Cleaned Note: {textContent}\nEntities: {string.Join(", ", entitiesList)}\nDiagnostics: {string.Join(", ", diagList)}";
+                    }
+                }
+                catch
+                {
+                    // Fall back to original aiResponse and default confidence if JSON parsing fails
+                }
+
                 // 3. Save AI Analysis result
                 var aiAnalysis = new AIAnalysis
                 {
                     CaseId = caseId,
                     ModelVersion = "clinicMODELv0",
-                    Confidence = 0.88, // Mocked confidence or extracted from response
+                    Confidence = confidence,
                     ProcessingTime = processingTime,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -94,8 +157,8 @@ namespace ClinicAI.APIControllers
                 var aiFinding = new AIFinding
                 {
                     AnalysisId = aiAnalysis.Id,
-                    Finding = aiResponse,
-                    Confidence = 0.88
+                    Finding = findingText,
+                    Confidence = confidence
                 };
                 await _unitOfWork.AIFindings.AddAsync(aiFinding);
                 await _unitOfWork.CompleteAsync();

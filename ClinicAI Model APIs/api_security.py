@@ -9,8 +9,8 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 # قاعدة بيانات مصغرة للمشتركين (في المستقبل هتربطها بـ Database حقيقية زي PostgreSQL/SQL Server)
 # كل مفتاح مربوط بصلاحيات معينة (مثلاً يقدر يستخدم موديل v1 أو v2)
 VALID_API_KEYS = {
-    "sk_test_1234567890abcdef": {"user": "client_a", "plan": "premium", "allowed_models": ["clinicai_v2"]},
-    "sk_test_0987654321fedcba": {"user": "client_b", "plan": "basic", "allowed_models": ["clinicai_v1"]}
+    "sk_test_1234567890abcdef": {"user": "client_a", "plan": "premium", "allowed_models": ["clinicai_v2", "clinicai_nlp"]},
+    "sk_test_0987654321fedcba": {"user": "client_b", "plan": "basic", "allowed_models": ["clinicai_v1", "clinicai_nlp"]}
 }
 
 async def get_api_key(api_key_header: str = Security(api_key_header)):
