@@ -183,7 +183,7 @@ namespace ClinicAI.APIControllers
         }
 
         [HttpPost("classify")]
-        public async Task<IActionResult> Classify([FromForm] int caseId, IFormFile file)
+        public async Task<IActionResult> Classify([FromForm] int caseId, IFormFile file, [FromForm] bool includeGridcam = false)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("Scan image file is required.");
@@ -228,11 +228,12 @@ namespace ClinicAI.APIControllers
                 Dictionary<string, double>? probabilities = null;
                 Dictionary<string, int>? predictions = null;
                 string[]? detectedLabels = null;
+                string? gridcam = null;
 
                 try
                 {
                     // Query the AI model Python endpoint configured in database
-                    rawAiResponse = await _aiService.ClassifyScanAsync(file);
+                    rawAiResponse = await _aiService.ClassifyScanAsync(file, includeGridcam);
                     
                     using (var doc = JsonDocument.Parse(rawAiResponse))
                     {
@@ -308,6 +309,10 @@ namespace ClinicAI.APIControllers
                         if (root.TryGetProperty("predictions", out var predictionsProp) && predictionsProp.ValueKind == JsonValueKind.Object)
                         {
                             predictions = JsonSerializer.Deserialize<Dictionary<string, int>>(predictionsProp.GetRawText());
+                        }
+                        if (root.TryGetProperty("gridcam", out var gridcamProp) && gridcamProp.ValueKind == JsonValueKind.String)
+                        {
+                            gridcam = gridcamProp.GetString();
                         }
 
                         // Extract confidence (max probability of detected labels)
@@ -413,6 +418,7 @@ namespace ClinicAI.APIControllers
                     detectedLabels = detectedLabels ?? (predictionLabel == "Normal" ? new string[] { "No Finding" } : predictionLabel.Split(", ")),
                     probabilities = probabilities,
                     predictions = predictions,
+                    gridcam = gridcam,
                     details = rawAiResponse,
                     processingTime = processingTime
                 });

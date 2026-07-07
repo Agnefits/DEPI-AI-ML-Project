@@ -125,6 +125,10 @@ class _ClassifyReportScreenState extends State<ClassifyReportScreen> with Single
 
                     // Detected Pathologies (Tags)
                     _buildDetectedPathologiesTags(statusColor),
+                    if (widget.result.gridcam != null && widget.result.gridcam!.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      _buildGridcamSection(),
+                    ],
                     const SizedBox(height: 24),
 
                     // Probability Breakdown Title
@@ -654,6 +658,163 @@ class _ClassifyReportScreenState extends State<ClassifyReportScreen> with Single
     } catch (_) {
       return detailsStr;
     }
+  }
+
+  Widget _buildGridcamSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2343),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.blur_on, color: Color(0xFF6D6AFB), size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'AI Attention Heatmaps',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Visualizes regions that influenced the model\'s classification for all 14 disease classes. Tap the grid to view, zoom, and explore in detail.',
+            style: GoogleFonts.poppins(
+              color: Colors.white54,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () => _openFullscreenGridcam(),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  _getGridcamImage(fit: BoxFit.contain),
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.fullscreen, color: Colors.white, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Tap to Expand & Zoom',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getGridcamImage({BoxFit fit = BoxFit.contain}) {
+    try {
+      String base64Data = widget.result.gridcam!;
+      if (base64Data.startsWith('data:image')) {
+        base64Data = base64Data.substring(base64Data.indexOf(',') + 1);
+      }
+      final bytes = base64Decode(base64Data.trim());
+      return Image.memory(
+        bytes,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 200,
+            color: const Color(0xFF161B3D),
+            alignment: Alignment.center,
+            child: Text(
+              'Error loading Heatmap Grid',
+              style: GoogleFonts.poppins(color: Colors.white38),
+            ),
+          );
+        },
+      );
+    } catch (_) {
+      return Container(
+        height: 200,
+        color: const Color(0xFF161B3D),
+        alignment: Alignment.center,
+        child: Text(
+          'Invalid Heatmap Data',
+          style: GoogleFonts.poppins(color: Colors.white38),
+        ),
+      );
+    }
+  }
+
+  void _openFullscreenGridcam() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              'Heatmap Exploration',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              panEnabled: true,
+              boundaryMargin: const EdgeInsets.all(20),
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: _getGridcamImage(fit: BoxFit.contain),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Color _getPriorityColor(String priority) {

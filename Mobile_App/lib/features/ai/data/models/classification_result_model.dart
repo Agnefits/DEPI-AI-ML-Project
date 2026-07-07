@@ -5,6 +5,7 @@ class ClassificationResultModel {
   final List<String> detectedLabels;
   final Map<String, double> probabilities;
   final Map<String, int> predictions;
+  final String? gridcam;
   final String details;
   final double processingTime;
 
@@ -15,6 +16,7 @@ class ClassificationResultModel {
     required this.detectedLabels,
     required this.probabilities,
     required this.predictions,
+    this.gridcam,
     required this.details,
     required this.processingTime,
   });
@@ -54,6 +56,7 @@ class ClassificationResultModel {
       detectedLabels: detected,
       probabilities: probs,
       predictions: preds,
+      gridcam: json['gridcam'] as String?,
       details: json['details'] as String? ?? '',
       processingTime: (json['processingTime'] is num) ? (json['processingTime'] as num).toDouble() : 0.0,
     );

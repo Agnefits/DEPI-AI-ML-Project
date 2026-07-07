@@ -26,6 +26,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   String? _selectedFilePath;
   String? _selectedFileName;
   bool _isSubmitting = false;
+  bool _includeGridcam = false;
 
   @override
   void initState() {
@@ -77,6 +78,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       final ClassificationResultModel result = await _dataSource.classify(
         int.parse(_selectedCase!.id),
         _selectedFilePath!,
+        includeGridcam: _includeGridcam,
       );
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -202,6 +204,52 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F2343),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Generate AI Attention Heatmaps',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Highlights regions of interest that the AI model focused on for disease detection.',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white54,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Switch(
+                    value: _includeGridcam,
+                    activeThumbColor: const Color(0xFF6D6AFB),
+                    onChanged: (val) {
+                      setState(() {
+                        _includeGridcam = val;
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
             const Spacer(),

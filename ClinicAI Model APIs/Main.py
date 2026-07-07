@@ -22,6 +22,7 @@ async def root():
 async def predict_xray(
     model_name: str = Form("clinicai_v2"), # السماح باختيار الموديل
     file: UploadFile = File(...),
+    include_gridcam: bool = Form(False),
     client_data: dict = Depends(get_api_key) # خط الدفاع: التأكد من الـ API Key
 ):
     # 1. فحص هل العميل يمتلك صلاحية لاستخدام هذا الموديل؟
@@ -40,7 +41,7 @@ async def predict_xray(
         image_bytes = await file.read()
         
         # 3. إرسال الصورة للموديل
-        result = ai_manager.predict_from_bytes(image_bytes)
+        result = ai_manager.predict_from_bytes(image_bytes, include_gridcam=include_gridcam)
         result["status"] = "Success"
         result["client"] = client_data["user"]
         

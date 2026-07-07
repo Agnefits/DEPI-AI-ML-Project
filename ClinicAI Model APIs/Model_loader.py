@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict
 import json
 import re
+import base64
 from transformers import AutoTokenizer, AutoModel
 
 # استدعاء الأساسيات من الملف اللي لسه عاملينه
@@ -49,7 +50,7 @@ class APIInferenceManager:
         # 4. تجهيز الـ Transforms الخاص بـ Albumentations[cite: 1]
         self.transform = get_inference_transforms(self.cfg)
 
-    def predict_from_bytes(self, image_bytes: bytes) -> Dict:
+    def predict_from_bytes(self, image_bytes: bytes, include_gridcam: bool = False) -> Dict:
         # تحويل الصورة القادمة من الـ API إلى مصفوفة قابلة للقراءة
         np_arr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
@@ -62,10 +63,85 @@ class APIInferenceManager:
         # تطبيق المعالجة وتحويلها لـ Tensor
         tensor = self.transform(image=img)["image"].unsqueeze(0).to(self.device)
         
-        # المعالجة واستخراج التوقعات
-        with torch.no_grad():
+        if include_gridcam:
+            # We need gradients for Grad-CAM
+            tensor.requires_grad = True
+            
+            class HookContainer:
+                def __init__(self):
+                    self.activation = None
+                    self.gradient = None
+                def forward_hook(self, module, input, output):
+                    self.activation = output.detach()
+                def backward_hook(self, module, grad_input, grad_output):
+                    self.gradient = grad_output[0].detach()
+                    
+            container = HookContainer()
+            target_layer = self.model.backbone.stages[-1].blocks[-1]
+            h1 = target_layer.register_forward_hook(container.forward_hook)
+            h2 = target_layer.register_full_backward_hook(container.backward_hook)
+            
             logits = self.model(tensor)
-            probs = torch.sigmoid(logits).numpy().squeeze()
+            probs_tensor = torch.sigmoid(logits).squeeze(0)
+            probs = probs_tensor.detach().cpu().numpy()
+            
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+            import io
+            
+            fig, axes = plt.subplots(4, 4, figsize=(12, 12))
+            axes_flat = axes.flatten()
+            
+            orig_h, orig_w = img.shape[:2]
+            
+            for i in range(self.cfg.NUM_CLASSES):
+                self.model.zero_grad()
+                logits[0, i].backward(retain_graph=True)
+                
+                if container.activation is not None and container.gradient is not None:
+                    weights = torch.mean(container.gradient, dim=(2, 3), keepdim=True)
+                    cam = torch.sum(weights * container.activation, dim=1).squeeze(0)
+                    cam = torch.relu(cam)
+                    
+                    cam_min, cam_max = cam.min(), cam.max()
+                    if cam_max > cam_min:
+                        cam = (cam - cam_min) / (cam_max - cam_min)
+                    else:
+                        cam = torch.zeros_like(cam)
+                        
+                    cam_np = cam.cpu().numpy()
+                    
+                    heatmap = cv2.resize(cam_np, (orig_w, orig_h))
+                    heatmap_color = cv2.applyColorMap(np.uint8(255 * heatmap), cv2.COLORMAP_JET)
+                    heatmap_rgb = cv2.cvtColor(heatmap_color, cv2.COLOR_BGR2RGB)
+                    
+                    superimposed = cv2.addWeighted(img, 0.6, heatmap_rgb, 0.4, 0)
+                    
+                    axes_flat[i].imshow(superimposed)
+                    axes_flat[i].set_title(f"{self.cfg.CLASSES[i]}\n(p={probs[i]:.3f})", fontsize=9, fontweight='bold')
+                axes_flat[i].axis('off')
+                
+            for idx in range(self.cfg.NUM_CLASSES, 16):
+                axes_flat[idx].axis('off')
+                
+            h1.remove()
+            h2.remove()
+            self.model.zero_grad()
+            
+            plt.tight_layout()
+            buf = io.BytesIO()
+            fig.savefig(buf, format='png', bbox_inches='tight', dpi=150)
+            plt.close(fig)
+            buf.seek(0)
+            gridcam_base64 = base64.b64encode(buf.read()).decode('utf-8')
+            gridcam_uri = f"data:image/png;base64,{gridcam_base64}"
+        else:
+            # المعالجة واستخراج التوقعات
+            with torch.no_grad():
+                logits = self.model(tensor)
+                probs = torch.sigmoid(logits).numpy().squeeze()
+            gridcam_uri = None
             
         predictions = (probs >= self.thresholds).astype(int)
         detected = [
@@ -74,11 +150,15 @@ class APIInferenceManager:
             if pred
         ]
         
-        return {
+        result = {
             "probabilities": dict(zip(self.cfg.CLASSES, probs.tolist())),
             "predictions": dict(zip(self.cfg.CLASSES, predictions.tolist())),
             "detected_labels": detected if detected else [{"label": "No Finding", "probability": 0.0}]
         }
+        if include_gridcam:
+            result["gridcam"] = gridcam_uri
+            
+        return result
 
 # تهيئة الـ Manager (تأكد إن مسار الموديل صحيح)
 ai_manager = APIInferenceManager("checkpoint/CV/best_model.pth")

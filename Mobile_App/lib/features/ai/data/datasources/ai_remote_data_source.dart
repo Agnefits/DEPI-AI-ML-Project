@@ -5,7 +5,7 @@ import '../models/classification_result_model.dart';
 import '../models/analyze_result_model.dart';
 
 abstract class AiRemoteDataSource {
-  Future<ClassificationResultModel> classify(int caseId, String filePath);
+  Future<ClassificationResultModel> classify(int caseId, String filePath, {bool includeGridcam = false});
   Future<AnalyzeResultModel> analyze(int caseId, {String? prompt, String? filePath});
 }
 
@@ -15,10 +15,11 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
   AiRemoteDataSourceImpl({required this.client});
 
   @override
-  Future<ClassificationResultModel> classify(int caseId, String filePath) async {
+  Future<ClassificationResultModel> classify(int caseId, String filePath, {bool includeGridcam = false}) async {
     final formData = FormData.fromMap({
       'caseId': caseId,
       'file': await MultipartFile.fromFile(filePath),
+      'includeGridcam': includeGridcam,
     });
 
     final response = await client.dio.post(

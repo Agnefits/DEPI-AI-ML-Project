@@ -54,7 +54,7 @@ namespace ClinicAI.Services.Classes
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public async Task<string> ClassifyScanAsync(IFormFile file)
+        public async Task<string> ClassifyScanAsync(IFormFile file, bool includeGridcam = false)
         {
             if (file == null || file.Length == 0)
             {
@@ -94,6 +94,8 @@ namespace ClinicAI.Services.Classes
                 multipartContent.Add(new StringContent(modelName), "model");
                 multipartContent.Add(new StringContent(modelName), "model_name");
             }
+
+            multipartContent.Add(new StringContent(includeGridcam.ToString().ToLower()), "include_gridcam");
 
             var fileStream = file.OpenReadStream();
             var fileContent = new StreamContent(fileStream);

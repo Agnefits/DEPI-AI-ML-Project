@@ -1,0 +1,9 @@
+website: https://clinicai.runasp.net/
+webAPIs: https://clinicai.runasp.net/swagger/index.html
+
+Notebooks:
+- https://www.kaggle.com/code/agnefits/clinicai-v2-0
+- https://www.kaggle.com/code/agnefits/clinicai-v2-1
+- https://www.kaggle.com/code/youssefelsharawy/clinicai-v2-1
+
+- https://www.kaggle.com/code/ahmedadelrasmy/notebookc445ac7933
