@@ -1,0 +1,12 @@
+# ClinicAI - Kaggle Notebooks and Datasets Links Reference
+
+Below are the public Kaggle links for the datasets, training notebook, and model weights outputs:
+
+## 1. Training & Execution Notebook
+- **Kaggle Notebook**: https://www.kaggle.com/code/ahmedadelrasmy/notebookc445ac7933
+  *Note: Use this notebook in your Kaggle/GPU environment to run the training pipeline.*
+  *Note: Download `best_model.pth` for the Chest X-Ray classifier and the NLP models/vocab files (`ner_biobert_bilstm_crf.pt`, `cnn_icd10_classifier.pt`, `tag_to_ix.json`, `word_to_ix.json`, `icd_codes.json`) from this link.*
+
+## 3. Raw Training Datasets
+- **BLURB / BC2GM Dataset (Gene NER)**: https://www.kaggle.com/datasets/ahmedadelrasmy/lr-dataset/data
+- **BC5CDR Dataset (Chemical / Disease NER)**: https://www.kaggle.com/datasets/ahmedadelrasmy/cdr-dataset/data

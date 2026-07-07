@@ -59,14 +59,17 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Heavy model checkpoints and word vectors
-checkpoints/
 *.pt
 *.pth
 *.bin
 *.kv
+*.npy
 *.pt.tar
+checkpoints/biobert_model/
+checkpoints/biobert_tokenizer/
 
 # ClinicAI Model APIs checkpoints
 "ClinicAI Model APIs/checkpoint/"
 "ClinicAI Model APIs/checkpoint/best_model.pth"
+
 
