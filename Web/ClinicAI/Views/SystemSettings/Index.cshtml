@@ -53,30 +53,65 @@
 
         <!-- 2. AI Model settings Card -->
         <div class="glass-card mb-4">
-            <h4 class="mb-4 font-weight-bold" style="color: #818cf8;"><i class="fas fa-brain text-primary me-2"></i> AI Model Engine Integration</h4>
+            <h4 class="mb-4 font-weight-bold" style="color: #818cf8;"><i class="fas fa-brain text-primary me-2"></i> AI Model Engines Integration</h4>
+            
+            <!-- AI Classification Model Settings -->
+            <h5 class="mb-3 font-weight-bold text-light" style="font-size: 1.1rem;"><i class="fas fa-microscope text-info me-2"></i> AI Classify Engine (Image Scan Analysis)</h5>
             <div class="row">
-                <!-- API URL -->
+                <!-- Classify API URL -->
                 <div class="col-md-12 mb-3">
-                    <label asp-for="ApiUrl" class="glass-label">API Endpoint URL</label>
-                    <input asp-for="ApiUrl" type="url" class="glass-input" placeholder="https://api.model-provider.com/v1/..." required />
-                    <span asp-validation-for="ApiUrl" class="text-danger"></span>
+                    <label asp-for="ClassifyApiUrl" class="glass-label">Classify API Endpoint URL</label>
+                    <input asp-for="ClassifyApiUrl" type="url" class="glass-input" placeholder="http://localhost:8000/classify" required />
+                    <span asp-validation-for="ClassifyApiUrl" class="text-danger"></span>
                 </div>
             </div>
-            <div class="row">
-                <!-- API Key -->
+            <div class="row mb-4">
+                <!-- Classify API Key -->
                 <div class="col-md-6 mb-3">
-                    <label asp-for="ApiKey" class="glass-label">Bearer Token / API Security Key</label>
-                    <input asp-for="ApiKey" type="password" class="glass-input" placeholder="••••••••••••••••" value="@Model.ApiKey" />
-                    <span asp-validation-for="ApiKey" class="text-danger"></span>
+                    <label asp-for="ClassifyApiKey" class="glass-label">Classify Bearer Token / API Key</label>
+                    <input asp-for="ClassifyApiKey" type="password" class="glass-input" placeholder="••••••••••••••••" value="@Model.ClassifyApiKey" />
+                    <span asp-validation-for="ClassifyApiKey" class="text-danger"></span>
                 </div>
 
-                <!-- Model Name -->
+                <!-- Classify Model Name -->
                 <div class="col-md-6 mb-3">
-                    <label asp-for="ModelName" class="glass-label">Target Model Name (Identifier)</label>
-                    <input asp-for="ModelName" class="glass-input" required />
-                    <span asp-validation-for="ModelName" class="text-danger"></span>
+                    <label asp-for="ClassifyModelName" class="glass-label">Classify Model Name (Identifier)</label>
+                    <input asp-for="ClassifyModelName" class="glass-input" required />
+                    <span asp-validation-for="ClassifyModelName" class="text-danger"></span>
                 </div>
             </div>
+
+            <hr class="my-4" style="border-top: 1px solid rgba(255,255,255,0.1);" />
+
+            <!-- AI Analyze Model Settings (NLP Text Analysis) -->
+            <h5 class="mb-3 font-weight-bold text-light" style="font-size: 1.1rem;"><i class="fas fa-file-invoice-dollar text-warning me-2"></i> AI Analyze Engine (NLP Prompt & Text Analysis)</h5>
+            <div class="row">
+                <!-- Analyze API URL -->
+                <div class="col-md-12 mb-3">
+                    <label asp-for="AnalyzeApiUrl" class="glass-label">Analyze API Endpoint URL</label>
+                    <input asp-for="AnalyzeApiUrl" type="url" class="glass-input" placeholder="http://localhost:8000/analyze" required />
+                    <span asp-validation-for="AnalyzeApiUrl" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <!-- Analyze API Key -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="AnalyzeApiKey" class="glass-label">Analyze Bearer Token / API Key</label>
+                    <input asp-for="AnalyzeApiKey" type="password" class="glass-input" placeholder="••••••••••••••••" value="@Model.AnalyzeApiKey" />
+                    <span asp-validation-for="AnalyzeApiKey" class="text-danger"></span>
+                </div>
+
+                <!-- Analyze Model Name -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="AnalyzeModelName" class="glass-label">Analyze Model Name (Identifier)</label>
+                    <input asp-for="AnalyzeModelName" class="glass-input" required />
+                    <span asp-validation-for="AnalyzeModelName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" style="border-top: 1px solid rgba(255,255,255,0.1);" />
+
+            <!-- Common Threshold -->
             <div>
                 <label asp-for="ConfidenceThreshold" class="glass-label">Confidence Acceptance Threshold (0.00 - 1.00)</label>
                 <input asp-for="ConfidenceThreshold" type="number" step="0.01" min="0.00" max="1.00" class="glass-input" required />
@@ -122,6 +157,16 @@
                     <input asp-for="EnableSsl" type="checkbox" class="custom-control-input" id="enableSslSwitch" />
                     <label class="custom-control-label glass-label font-weight-normal" for="enableSslSwitch">Enable Secure Sockets Layer (SSL)</label>
                 </div>
+            </div>
+        </div>
+
+        <!-- 4. Mobile App Configuration Card -->
+        <div class="glass-card mb-4">
+            <h4 class="mb-4 font-weight-bold" style="color: #a78bfa;"><i class="fas fa-mobile-alt text-violet me-2"></i> Mobile Application Config</h4>
+            <div>
+                <label asp-for="ApkDownloadUrl" class="glass-label">APK Download Link</label>
+                <input asp-for="ApkDownloadUrl" type="url" class="glass-input" placeholder="e.g., https://example.com/downloads/clinicai.apk" />
+                <span asp-validation-for="ApkDownloadUrl" class="text-danger"></span>
             </div>
         </div>
 

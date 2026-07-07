@@ -8,9 +8,14 @@ namespace ClinicAI.ViewModels.SystemSettings
         public string StoragePath { get; set; } = string.Empty;
 
         // AI Configuration Settings
-        public string ApiUrl { get; set; } = string.Empty;
-        public string ApiKey { get; set; } = string.Empty;
-        public string ModelName { get; set; } = string.Empty;
+        public string ClassifyApiUrl { get; set; } = string.Empty;
+        public string ClassifyApiKey { get; set; } = string.Empty;
+        public string ClassifyModelName { get; set; } = string.Empty;
+
+        public string AnalyzeApiUrl { get; set; } = string.Empty;
+        public string AnalyzeApiKey { get; set; } = string.Empty;
+        public string AnalyzeModelName { get; set; } = string.Empty;
+
         public double ConfidenceThreshold { get; set; }
 
         // SMTP Email Settings
@@ -19,5 +24,8 @@ namespace ClinicAI.ViewModels.SystemSettings
         public string SenderEmail { get; set; } = string.Empty;
         public string SenderPassword { get; set; } = string.Empty;
         public bool EnableSsl { get; set; }
+
+        // Mobile Application Settings
+        public string ApkDownloadUrl { get; set; } = string.Empty;
     }
 }

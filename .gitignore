@@ -47,7 +47,6 @@
 /Web/**/Thumbs.db
 /Web/ClinicAI/wwwroot/uploads
 /Web/ClinicAI/.vs
-
 # Python virtual environment
 .venv/
 venv/
@@ -66,4 +65,8 @@ checkpoints/
 *.bin
 *.kv
 *.pt.tar
+
+# ClinicAI Model APIs checkpoints
+"ClinicAI Model APIs/checkpoint/"
+"ClinicAI Model APIs/checkpoint/best_model.pth"
 
